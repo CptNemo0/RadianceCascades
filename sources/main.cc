@@ -1,29 +1,31 @@
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
-#include "glm/ext/vector_float3.hpp"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
-#include <concepts>
-#include <cstdlib>
-#include <ctime>
-#include <format>
-#include <functional>
-#include <initializer_list>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <utility>
-#include <vector>
 #endif // !GLFW_INCLUDE_NONE
 
 #include "glad/include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
+#include "glm/ext/vector_float3.hpp"
+#include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
+
 #include <array>
 #include <cmath>
+#include <concepts>
+#include <cstdlib>
+#include <ctime>
 #include <exception>
+#include <format>
+#include <functional>
+#include <initializer_list>
+#include <iostream>
+#include <memory>
+#include <numbers>
 #include <print>
+#include <stdexcept>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "aliasing.h"
 #include "app.h"
@@ -33,10 +35,13 @@
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
+#include "texture.h"
 #include "utility.h"
 
+using rc::i8, rc::i32, rc::i64, rc::u8, rc::u32, rc::u64, rc::f32;
+using ShaderType = rc::ShaderManager::ShaderType;
+
 namespace rc {
-class Renderer {};
 
 class RenderNode {
   public:
@@ -174,10 +179,160 @@ class JfaNode : public RenderNode {
     std::array<rc::RenderTarget*, 2> render_targets_;
 };
 
-} // namespace rc
+class GlobalIlluminationNode : public RenderNode {
+  public:
+    struct Parameters {
+        bool dirty{true};
+        i32 step_count = 128;
+        f32 proximity_epsilon = 0.00001f;
+        i32 ray_count = 32;
+        f32 one_over_ray_count = 1.0f / static_cast<float>(ray_count);
+        f32 angle_step =
+          static_cast<float>(std::numbers::pi) * one_over_ray_count;
+    };
+    GlobalIlluminationNode(std::initializer_list<RenderNode*> inputs)
+      : RenderNode(inputs), gi_render_target_(std::make_unique<RenderTarget>(
+                              rc::gScreenWidth, rc::gScreenHeight)),
+        previous_frame_(
+          std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
+        noise_texture_(
+          rc::GetNoiseTexture(rc::gScreenWidth, rc::gScreenHeight)) {
+      const Shader* shader =
+        ShaderManager::Instance().Use(ShaderManager::ShaderType::kGi);
+      shader->setInt("color_texture", 0);
+      shader->setInt("sdf_texture", 1);
+      shader->setInt("previous_frame", 2);
+      shader->setInt("noise_texture", 3);
+    }
 
-using rc::i8, rc::i32, rc::i64, rc::u8, rc::u32, rc::u64, rc::f32;
-using ShaderType = rc::ShaderManager::ShaderType;
+    virtual void Forward() override {
+      float time = App::Instance().GetTime() * 1000.f - time_normalizer;
+      if (time > 1000.0f) {
+        time_normalizer += 1000.0f;
+      }
+
+      const Shader* shader =
+        ShaderManager::Instance().Use(ShaderManager::ShaderType::kGi);
+      BindInputs();
+      UpdateUniforms();
+      shader->setFloat("time", time);
+      gi_render_target_->Bind();
+      gi_render_target_->Clear();
+      previous_frame_->BindTexture(GL_TEXTURE0 + inputs_.size() + 0);
+      noise_texture_->BindTexture(GL_TEXTURE0 + inputs_.size() + 1);
+      rc::Surface::Instnace().Draw();
+
+      rc::ShaderManager::Instance().Use(ShaderManager::ShaderType::kSurface);
+      previous_frame_->Bind();
+      previous_frame_->Clear();
+      gi_render_target_->BindTexture(GL_TEXTURE0);
+      rc::Surface::Instnace().Draw();
+    }
+
+    virtual void BindOutput(int texture_slot) const override {
+      previous_frame_->BindTexture(texture_slot);
+    }
+
+    Parameters& get_params() {
+      return parameters_;
+    }
+
+  private:
+    void UpdateUniforms() {
+      if (!parameters_.dirty) {
+        return;
+      }
+      const Shader* shader =
+        ShaderManager::Instance().Use(ShaderManager::ShaderType::kGi);
+      shader->setInt("step_count", parameters_.step_count);
+      shader->setFloat("proximity_epsilon", parameters_.proximity_epsilon);
+      shader->setInt("ray_count", parameters_.ray_count);
+      shader->setFloat("one_over_ray_count", parameters_.one_over_ray_count);
+      shader->setFloat("angle_step", parameters_.angle_step);
+      parameters_.dirty = false;
+    }
+
+    Parameters parameters_;
+    std::unique_ptr<RenderTarget> gi_render_target_;
+    std::unique_ptr<RenderTarget> previous_frame_;
+    std::unique_ptr<Texture> noise_texture_;
+    float time_normalizer = 0.0;
+};
+
+class RadianceCascadesNode : public RenderNode {
+  public:
+    struct Parameters {
+        i32 base_ray_count = 16;
+        i32 cascade_count = static_cast<int>(
+          std::ceil(std::log(std::sqrt(rc::gScreenWidth * rc::gScreenWidth +
+                                       rc::gScreenHeight * rc::gScreenHeight)) /
+                    std::log(rc::gBaseRayCount)));
+        f32 s_rgb = 2.1;
+        bool dirty = true;
+    };
+
+    RadianceCascadesNode(std::initializer_list<RenderNode*> inputs)
+      : RenderNode(inputs), render_target_1_(std::make_unique<RenderTarget>(
+                              rc::gScreenWidth, rc::gScreenHeight)),
+        render_target_2_(
+          std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)) {
+      const rc::Shader* shader_rc =
+        ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+      shader_rc->setVec2("resolution",
+                         glm::vec2(rc::gScreenWidth, rc::gScreenHeight));
+      shader_rc->setInt("sceneTexture", 0);
+      shader_rc->setInt("distanceTexture", 1);
+      shader_rc->setInt("lastTexture", 2);
+      render_targets_[0] = render_target_1_.get();
+      render_targets_[1] = render_target_2_.get();
+    }
+
+    virtual void Forward() override {
+      const Shader* shader =
+        ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+      UpdateUniforms();
+      BindInputs();
+
+      // Last frame is second in the rc_render_targets array.
+      for (int i{parameters_.cascade_count - 1}; i > -1; --i) {
+        shader->setFloat("cascadeIndex", i);
+        shader->setBool("lastIndex", i == 0);
+        render_targets_[0]->Bind();
+        render_targets_[0]->ClearDefault();
+        render_targets_[1]->BindTexture(GL_TEXTURE2);
+        rc::Surface::Instnace().Draw();
+        std::swap(render_targets_[0], render_targets_[1]);
+      }
+    }
+
+    virtual void BindOutput(int texture_slot) const override {
+      render_targets_[1]->BindTexture(texture_slot);
+    }
+
+    Parameters& get_params() {
+      return parameters_;
+    }
+
+  private:
+    void UpdateUniforms() {
+      if (!parameters_.dirty) {
+        return;
+      }
+      const rc::Shader* shader_rc =
+        ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+      shader_rc->setFloat("base", parameters_.base_ray_count);
+      shader_rc->setFloat("cascadeCount", parameters_.cascade_count);
+      shader_rc->setFloat("srgb", parameters_.s_rgb);
+      parameters_.dirty = false;
+    }
+
+    Parameters parameters_;
+    std::unique_ptr<RenderTarget> render_target_1_;
+    std::unique_ptr<RenderTarget> render_target_2_;
+    std::array<RenderTarget*, 2> render_targets_;
+};
+
+} // namespace rc
 
 int main() {
   try {
@@ -203,31 +358,19 @@ int main() {
       rc::ShaderManager::ShaderType::kSdf,
       std::initializer_list<rc::RenderNode*>{jfa_node.get()});
 
-    std::vector<rc::RenderNode*> render_nodes{canvas_node.get(),
-                                              uv_colorspace_node.get(),
-                                              jfa_node.get(), sdf_node.get()};
+    std::unique_ptr<rc::GlobalIlluminationNode> gi_node =
+      std::make_unique<rc::GlobalIlluminationNode>(
+        std::initializer_list<rc::RenderNode*>{canvas_node.get(),
+                                               sdf_node.get()});
 
-    rc::RenderTarget render_target_jfa_1{rc::gScreenWidth, rc::gScreenHeight};
-    rc::RenderTarget render_target_jfa_2{rc::gScreenWidth, rc::gScreenHeight};
-    std::array<rc::RenderTarget*, 2> jfa_render_targets{&render_target_jfa_1,
-                                                        &render_target_jfa_2};
+    std::unique_ptr<rc::RadianceCascadesNode> rc_node =
+      std::make_unique<rc::RadianceCascadesNode>(
+        std::initializer_list<rc::RenderNode*>{canvas_node.get(),
+                                               sdf_node.get()});
 
-    rc::RenderTarget render_target_sdf{rc::gScreenWidth, rc::gScreenHeight};
-
-    rc::RenderTarget render_target_gi{rc::gScreenWidth, rc::gScreenHeight};
-
-    rc::RenderTarget render_target_rc_1{rc::gScreenWidth, rc::gScreenHeight};
-    rc::RenderTarget render_target_rc_2{rc::gScreenWidth, rc::gScreenHeight};
-    std::array<rc::RenderTarget*, 2> rc_render_targets{&render_target_rc_1,
-                                                       &render_target_rc_2};
-
-    rc::RenderTarget render_target_previous_frame{rc::gScreenWidth,
-                                                  rc::gScreenHeight};
-
-    auto noise_texture =
-      rc::GetNoiseTexture(rc::gScreenWidth, rc::gScreenHeight);
-
-    const f32 interval_overlap = 0.001f;
+    std::vector<rc::RenderNode*> render_nodes{
+      canvas_node.get(), uv_colorspace_node.get(), jfa_node.get(),
+      sdf_node.get(), gi_node.get()};
 
     while (app.ShouldRun()) {
       app.ProcessInput();
@@ -237,135 +380,13 @@ int main() {
       }
 
       for (auto* node : render_nodes) {
-        std::print("Forward\n");
         node->Forward();
       }
 
-/*
-      canvas.Draw();
-
-      // Copy canvas to jfa_1
-      shader_manager.Use(ShaderType::kSurface);
-      render_target_jfa_1.Bind();
-      render_target_jfa_1.Clear();
-      canvas.BindTexture(GL_TEXTURE0);
-      rc::Surface::Instnace().Draw();
-
-      // Create uv color space representation of canvas in jfa_2
-      shader_manager.Use(ShaderType::kUvColorspace);
-      render_target_jfa_2.Bind();
-      render_target_jfa_2.Clear();
-      render_target_jfa_1.BindTexture(GL_TEXTURE0);
-      rc::Surface::Instnace().Draw();
-
-      const rc::Shader* shader_jfa = shader_manager.Use(ShaderType::kJfa);
-      shader_jfa->setFloat("width", rc::gScreenWidth);
-      shader_jfa->setFloat("height", rc::gScreenHeight);
-      shader_jfa->setFloat("one_over_width", rc::gOneOverWidth);
-      shader_jfa->setFloat("one_over_height", rc::gOneOverHeight);
-
-      // JFA
-      // "Step length starts at 1 and than doubles until  N/2 for the scatter
-      // approach." ~ JFA article.
-      // Inverse should happen in the case of gather approach. From N/2 to 1.
-      rc::u32 jfa_swaps = 0;
-      for (auto i{0uz}; i < rc::gJfaSteps; ++i) {
-        // -1 to start from N / 2
-        shader_jfa->setInt("step_size", std::pow(2, rc::gJfaSteps - i - 1));
-
-        jfa_render_targets[jfa_swaps % 2]->Bind();
-        jfa_render_targets[jfa_swaps % 2]->Clear();
-        jfa_render_targets[(jfa_swaps + 1) % 2]->BindTexture(GL_TEXTURE0);
-        rc::Surface::Instnace().Draw();
-
-        jfa_swaps++;
-      }
-
-      shader_manager.Use(ShaderType::kSdf);
-      render_target_sdf.Bind();
-      render_target_sdf.Clear();
-      jfa_render_targets[(jfa_swaps + 1) % 2]->BindTexture(GL_TEXTURE0);
-      rc::Surface::Instnace().Draw();
-*/
-#pragma region GI
-      // const rc::Shader* shader_gi = rc::ShaderManager::Instance().GetShader(
-      //   rc::ShaderManager::ShaderType::kGi);
-      // shader_gi->use();
-      // shader_gi->setInt("step_count", 1024);
-      // shader_gi->setFloat("proximity_epsilon", 0.0001f);
-
-      // shader_gi->setInt("ray_count", static_cast<float>(ray_count));
-      // shader_gi->setFloat("one_over_ray_count", 1.0f / ray_count);
-      // shader_gi->setFloat("angle_step", 2 * 3.14159f / ray_count);
-
-      // shader_gi->setFloat("width", rc::gScreenWidth);
-      // shader_gi->setFloat("height", rc::gScreenHeight);
-
-      // shader_gi->setInt("color_texture", 0);
-      // shader_gi->setInt("sdf_texture", 1);
-      // shader_gi->setInt("previous_frame", 2);
-      // shader_gi->setInt("noise_texture", 3);
-
-      // shader_gi->setFloat("time", app.GetTime() * 1000.f);
-
-      // render_target_gi.Bind();
-      // render_target_gi.Clear();
-      // canvas.BindTexture(GL_TEXTURE0);
-      // render_target_sdf.BindTexture(GL_TEXTURE1);
-      // render_target_previous_frame.BindTexture(GL_TEXTURE2);
-      // noise_texture->BindTexture(GL_TEXTURE3);
-      // rc::Surface::Instnace().Draw();
-#pragma endregion GI
-
-      auto diagonal = std::sqrt(rc::gScreenWidth * rc::gScreenWidth +
-                                rc::gScreenHeight * rc::gScreenHeight);
-
-      auto cascade_count = static_cast<int>(
-        std::ceil(std::log(diagonal) / std::log(rc::gBaseRayCount)));
-      const rc::Shader* shader_rc = shader_manager.Use(ShaderType::kRc);
-      shader_rc->setVec2("resolution",
-                         glm::vec2(rc::gScreenWidth, rc::gScreenHeight));
-      shader_rc->setInt("sceneTexture", 0);
-      shader_rc->setInt("distanceTexture", 1);
-      shader_rc->setInt("lastTexture", 2);
-      shader_rc->setFloat("base", rc::gBaseRayCount);
-      shader_rc->setFloat("cascadeCount", cascade_count);
-      shader_rc->setFloat("srgb", 2.1f);
-
-      canvas_node->BindOutput(GL_TEXTURE0);
-      sdf_node->BindOutput(GL_TEXTURE1);
-
-      // canvas.BindTexture(GL_TEXTURE0);
-      // render_target_sdf.BindTexture(GL_TEXTURE1);
-
-      // Last frame is second in the rc_render_targets array.
-      for (int i{cascade_count - 1}; i > -1; --i) {
-        shader_rc->setFloat("cascadeIndex", i);
-        shader_rc->setBool("lastIndex", i == 0);
-        float scale = std::powf(2, i + 1);
-        shader_rc->setVec2("resolution",
-                           glm::vec2(rc::gScreenWidth, rc::gScreenHeight));
-        rc_render_targets[0]->Bind();
-        rc_render_targets[0]->ClearDefault();
-        rc_render_targets[1]->BindTexture(GL_TEXTURE2);
-
-        rc::Surface::Instnace().Draw();
-        std::swap(rc_render_targets[0], rc_render_targets[1]);
-      }
-
-      // Copy to previous frame
-      // rc::ShaderManager::Instance().GetShader(
-      //   rc::ShaderManager::ShaderType::kSurface);
-      // render_target_previous_frame.Bind();
-      // render_target_previous_frame.Clear();
-      // render_target_rc_1.BindTexture(GL_TEXTURE0);
-      // rc::Surface::Instnace().Draw();
-
-      // Draw to screen
-      shader_manager.Use(ShaderType::kSurface);
+      rc::ShaderManager::Instance().Use(ShaderType::kSurface);
       rc::RenderTarget::BindDefault();
       rc::RenderTarget::ClearDefault();
-      rc_render_targets[1]->BindTexture(GL_TEXTURE0);
+      render_nodes.back()->BindOutput(GL_TEXTURE0);
       rc::Surface::Instnace().Draw();
 
       app.EndFrame();
