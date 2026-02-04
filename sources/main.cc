@@ -1,5 +1,6 @@
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
+#include "imgui/imgui.h"
 #endif // !GLFW_INCLUDE_NONE
 
 #include "glad/include/glad/glad.h"
@@ -8,6 +9,9 @@
 #include "glm/ext/vector_float3.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
+
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 
 #include <array>
 #include <cmath>
@@ -31,6 +35,7 @@
 #include "app.h"
 #include "canvas.h"
 #include "constants.h"
+#include "render_node.h"
 #include "render_target.h"
 #include "shader.h"
 #include "shader_manager.h"
@@ -42,33 +47,6 @@ using rc::i8, rc::i32, rc::i64, rc::u8, rc::u32, rc::u64, rc::f32;
 using ShaderType = rc::ShaderManager::ShaderType;
 
 namespace rc {
-
-class RenderNode {
-  public:
-    RenderNode() = default;
-    virtual ~RenderNode() = default;
-
-    // Performs node's rendering routine.
-    virtual void Forward() = 0;
-
-    // Binds output texture to the provided texture slot.
-    virtual void BindOutput(int texture_slot) const = 0;
-
-    void BindInputs() {
-      for (auto i{0uz}; i < inputs_.size(); ++i) {
-        if (!inputs_[i]) {
-          throw std::runtime_error(
-            "BindPreviousOutput(): An input render target was a nullptr\n");
-        }
-
-        inputs_[i]->BindOutput(GL_TEXTURE0 + i);
-      }
-    }
-
-  protected:
-    RenderNode(std::initializer_list<RenderNode*> inputs) : inputs_(inputs) {};
-    std::vector<RenderNode*> inputs_{};
-};
 
 class CopyNode : public RenderNode {
   public:
@@ -388,6 +366,13 @@ int main() {
       rc::RenderTarget::ClearDefault();
       render_nodes.back()->BindOutput(GL_TEXTURE0);
       rc::Surface::Instnace().Draw();
+
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
+      ImGui::NewFrame();
+
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
       app.EndFrame();
 
