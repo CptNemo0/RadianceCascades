@@ -2,7 +2,6 @@
 #define GLFW_INCLUDE_NONE
 #endif // !GLFW_INCLUDE_NONE
 
-#include "glad/include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
 #include <exception>
