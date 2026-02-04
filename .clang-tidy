@@ -1,0 +1,8 @@
+# Enable only Google checks
+Checks: 'google-*'
+
+# Check headers that match this regex (usually your own project headers)
+HeaderFilterRegex: '.*'
+
+# Treat warnings as errors
+WarningsAsErrors: 'google-*'

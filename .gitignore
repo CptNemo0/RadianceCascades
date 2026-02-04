@@ -1,0 +1,5 @@
+.cache/
+.zed/
+build/
+build_commands.md
+codebook.toml
