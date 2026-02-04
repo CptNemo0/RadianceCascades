@@ -10,10 +10,6 @@
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
 
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
-
 #include <exception>
 #include <format>
 #include <initializer_list>
@@ -31,14 +27,10 @@
 #include "render_nodes/jfa_node.h"
 #include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
-#include "render_target.h"
 #include "shader_manager.h"
-#include "surface.h"
 
 using rc::i8, rc::i32, rc::i64, rc::u8, rc::u32, rc::u64, rc::f32;
 using ShaderType = rc::ShaderManager::ShaderType;
-
-namespace rc {} // namespace rc
 
 int main() {
   try {
@@ -76,7 +68,12 @@ int main() {
 
     std::vector<rc::RenderNode*> render_nodes{
       canvas_node.get(), uv_colorspace_node.get(), jfa_node.get(),
-      sdf_node.get(), gi_node.get()};
+      sdf_node.get(), rc_node.get()};
+
+    std::unique_ptr<rc::CopyNode> to_screen_node =
+      std::make_unique<rc::CopyNode>(
+        std::initializer_list<rc::RenderNode*>{render_nodes.back()}, true);
+    render_nodes.push_back(to_screen_node.get());
 
     while (app.ShouldRun()) {
       app.ProcessInput();
@@ -88,12 +85,6 @@ int main() {
       for (auto* node : render_nodes) {
         node->Forward();
       }
-
-      rc::ShaderManager::Instance().Use(ShaderType::kSurface);
-      rc::RenderTarget::BindDefault();
-      rc::RenderTarget::ClearDefault();
-      render_nodes.back()->BindOutput(GL_TEXTURE0);
-      rc::Surface::Instnace().Draw();
 
       app.EndFrame();
 

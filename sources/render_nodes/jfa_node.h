@@ -11,6 +11,10 @@
 
 namespace rc {
 
+// Jump flood algorithm shader. Ping pong shader that fills space with the
+// nearest uv data. Used to calculate signed distance field. Input should be a
+// picture where each pixel with non-zero alpha has components r and g
+// substituted with uv value.
 class JfaNode : public RenderNode {
   public:
     explicit JfaNode(RenderNode* initializer_node);

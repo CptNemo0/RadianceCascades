@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 
+#include "aliasing.h"
 #include "constants.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
@@ -22,8 +23,7 @@ JfaNode::JfaNode(RenderNode* initializer_node)
     render_target_2(
       std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)) {
 
-  const Shader* jfa_shader =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kJfa);
+  const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
   jfa_shader->setFloat("width", rc::gScreenWidth);
   jfa_shader->setFloat("height", rc::gScreenHeight);
   jfa_shader->setFloat("one_over_width", rc::gOneOverWidth);
@@ -34,19 +34,19 @@ JfaNode::JfaNode(RenderNode* initializer_node)
 
 void JfaNode::Forward() {
   Initialize();
-  const Shader* jfa_shader =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kJfa);
+  const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
   jfa_swaps = 0;
+  u32 steps = std::pow(2, rc::gJfaSteps);
   for (auto i{0uz}; i < rc::gJfaSteps; ++i) {
-    // -1 to start from N / 2
-    jfa_shader->setInt("step_size", std::pow(2, rc::gJfaSteps - i - 1));
+    steps /= 2;
+    jfa_shader->setInt("step_size", steps);
 
     render_targets_[1]->Bind();
     render_targets_[1]->Clear();
     render_targets_[0]->BindTexture(GL_TEXTURE0);
     rc::Surface::Instnace().Draw();
     std::swap(render_targets_[0], render_targets_[1]);
-    jfa_swaps++;
+    ++jfa_swaps;
   }
 }
 
@@ -55,8 +55,7 @@ void JfaNode::BindOutput(int texture_slot) const {
 }
 
 void JfaNode::Initialize() {
-  const auto* _ =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kSurface);
+  const auto* _ = ShaderManager::Instance().Use(ShaderType::kSurface);
   inputs_[0]->BindOutput(GL_TEXTURE0);
   render_target_1->Bind();
   render_target_1->Clear();

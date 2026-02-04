@@ -6,6 +6,8 @@
 
 namespace rc {
 
+// CanvasNode is a wrapper around a Canvas class that allows for painting.
+// It's supposed to be a start of a pipeline so it doesn't accept inputs.
 class CanvasNode : public RenderNode {
   public:
     explicit CanvasNode(Canvas& canvas) : RenderNode({}), canvas_(canvas) {

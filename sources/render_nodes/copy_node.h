@@ -4,21 +4,22 @@
 #include <initializer_list>
 #include <memory>
 
-#include "constants.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
-#include "shader_manager.h"
 
 namespace rc {
 
+// This node performs a copy of the input texture to it's internal render
+// target. However a different shader can be provided, that will in turn also
+// transform the pixels. For example kSdf, kUvColorspace
+// This node can also be used to draw to screen. To do that pass true to last
+// argument of a constructor.
 class CopyNode : public RenderNode {
   public:
-    explicit CopyNode(ShaderManager::ShaderType copy_shader,
-                      std::initializer_list<RenderNode*> inputs)
-      : RenderNode(inputs), copy_shader_(copy_shader),
-        output_(
-          std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)) {
-    }
+    CopyNode(std::initializer_list<RenderNode*> inputs, bool to_screen = false);
+
+    CopyNode(ShaderType copy_shader, std::initializer_list<RenderNode*> inputs,
+             bool to_screen = false);
 
     virtual void Forward() override;
 
@@ -27,8 +28,11 @@ class CopyNode : public RenderNode {
     }
 
   private:
-    ShaderManager::ShaderType copy_shader_ =
-      ShaderManager::ShaderType::kSurface;
+    // Stored shader variant. If no is passed to constructor a normal copy is
+    // performed.
+    ShaderType copy_shader_ = ShaderType::kSurface;
+
+    // If nullptr, the shader will draw to screen instead.
     std::unique_ptr<RenderTarget> output_;
 };
 

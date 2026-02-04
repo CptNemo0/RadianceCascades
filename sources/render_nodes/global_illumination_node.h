@@ -12,6 +12,10 @@
 
 namespace rc {
 
+// GlobalIlluminationNode provides a naive global illumination approach
+// solution. It takes in Canvas and Sdf nodes as input.
+// Before every render dirty flag of parameters_ is checked. If it's set the
+// uniforms are updated with data present in the structure.
 class GlobalIlluminationNode : public RenderNode {
   public:
     struct Parameters {
@@ -19,7 +23,7 @@ class GlobalIlluminationNode : public RenderNode {
         i32 step_count = 128;
         f32 proximity_epsilon = 0.00001f;
         i32 ray_count = 32;
-        f32 one_over_ray_count = 1.0f / static_cast<float>(ray_count);
+        f32 one_over_ray_count = 1.0f / ray_count;
         f32 angle_step =
           static_cast<float>(std::numbers::pi) * one_over_ray_count;
     };
@@ -43,7 +47,7 @@ class GlobalIlluminationNode : public RenderNode {
     std::unique_ptr<RenderTarget> gi_render_target_;
     std::unique_ptr<RenderTarget> previous_frame_;
     std::unique_ptr<Texture> noise_texture_;
-    float time_normalizer_ = 0.0;
+    float time_normalizer_ = 0.0f;
 };
 
 } // namespace rc

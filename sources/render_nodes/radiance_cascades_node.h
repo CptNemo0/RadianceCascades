@@ -13,6 +13,10 @@
 
 namespace rc {
 
+// Radiance Cascades based global illumination shader.
+// solution. It takes in Canvas and Sdf nodes as input.
+// Before every render dirty flag of parameters_ is checked. If it's set the
+// uniforms are updated with data present in the structure.
 class RadianceCascadesNode : public RenderNode {
   public:
     struct Parameters {
