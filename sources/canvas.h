@@ -17,7 +17,7 @@ namespace rc {
 class Canvas {
   public:
     Canvas(u64 height, u64 width, u64 brush_radius = 10,
-           glm::vec3 brush_color = {1.0f, 0.0f, 0.0f});
+           glm::vec3 brush_color = {1.0f, 1.0f, 1.0f});
 
     u64 height() const {
       return height_;

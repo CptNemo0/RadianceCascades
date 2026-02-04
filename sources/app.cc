@@ -3,10 +3,13 @@
 #include "glad/include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
 #include "constants.h"
+#include "renderer.h"
+#include "shader_manager.h"
 
 namespace rc {
 
@@ -35,6 +38,10 @@ App::App() {
   }
 
   glfwSwapInterval(1);
+
+  ShaderManager::Instance().LoadShaders();
+  renderer_ = std::make_unique<Renderer>();
+  renderer_->Initialize();
 }
 
 App::~App() {
