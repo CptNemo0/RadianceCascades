@@ -3,3 +3,4 @@
 build/
 build_commands.md
 codebook.toml
+compile_commands.json
