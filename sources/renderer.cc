@@ -16,12 +16,14 @@
 
 namespace rc {
 
-Renderer::Renderer() : canvas_(rc::gScreenHeight, rc::gScreenHeight, 10) {
+Renderer::Renderer()
+  : canvas_(
+      std::make_unique<Canvas>(rc::gScreenHeight, rc::gScreenHeight, 10)) {
 }
 
 void Renderer::Initialize() {
   std::unique_ptr<rc::CanvasNode> canvas_node =
-    std::make_unique<rc::CanvasNode>(canvas_);
+    std::make_unique<rc::CanvasNode>(*(canvas_.get()));
 
   std::unique_ptr<rc::CopyNode> uv_colorspace_node =
     std::make_unique<rc::CopyNode>(

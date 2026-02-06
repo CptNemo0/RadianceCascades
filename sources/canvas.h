@@ -13,6 +13,8 @@
 
 namespace rc {
 
+class Ui;
+
 // The main drawing class.
 class Canvas {
   public:
@@ -44,7 +46,14 @@ class Canvas {
       brush_color_ = brush_color;
     }
 
+    void set_brush_radius(float radius) {
+      first_ = true;
+      brush_radius_ = radius;
+    }
+
   private:
+    friend class Ui;
+
     u64 height_;
     u64 width_;
 

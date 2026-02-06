@@ -9,6 +9,8 @@
 
 namespace rc {
 
+class Ui;
+
 class Renderer {
   public:
     enum class Mode {
@@ -22,13 +24,15 @@ class Renderer {
 
     void Render();
 
-    Canvas& canvas() {
-      return canvas_;
+    Canvas* canvas() {
+      return canvas_.get();
     }
 
   private:
+    friend class Ui;
+
     Mode mode_ = Mode::kRc;
-    rc::Canvas canvas_;
+    std::unique_ptr<rc::Canvas> canvas_;
     std::vector<std::unique_ptr<RenderNode>> nodes_;
     std::vector<RenderNode*> cascades_pipeline_;
     std::vector<RenderNode*> gi_pipeline_;

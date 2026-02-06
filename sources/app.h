@@ -1,17 +1,19 @@
 #ifndef RC_APP_H_
 #define RC_APP_H_
 
-#include <memory>
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
 #endif // !GLFW_INCLUDE_NONE
 
 #include <GLFW/glfw3.h>
 
-#include "renderer.h"
+#include <memory>
 #include <utility>
 
 namespace rc {
+
+class Ui;
+class Renderer;
 
 class App {
   public:
@@ -34,7 +36,7 @@ class App {
 
     std::pair<float, float> GetCursorPosition();
 
-    bool LMBPressed();
+    bool RMBPressed();
 
     void EndFrame();
 
@@ -46,9 +48,14 @@ class App {
       return renderer_.get();
     }
 
+    Ui* ui() {
+      return ui_.get();
+    }
+
   private:
     App();
     std::unique_ptr<Renderer> renderer_;
+    std::unique_ptr<Ui> ui_;
 };
 
 } // namespace rc

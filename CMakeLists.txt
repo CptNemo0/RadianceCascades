@@ -22,8 +22,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glm)
 
 # Adding our source files
-file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/sources/*.cc") # Define PROJECT_SOURCES as a list of all source files
-set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/") # Define PROJECT_INCLUDE to be the path to the include directory of the project
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/sources/*.cc" "${CMAKE_CURRENT_LIST_DIR}/sources/*.cpp") # Define PROJECT_SOURCES as a list of all source files
+set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/" "${CMAKE_CURRENT_LIST_DIR}/sources/imgui" "${CMAKE_CURRENT_LIST_DIR}/sources/imgui/backends")
 
 # Declaring our executable
 add_executable(${PROJECT_NAME})
@@ -48,6 +48,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wnon-virtual-dtor
     -Woverloaded-virtual
 )
+
+add_compile_definitions(GLFW_INCLUDE_NONE)
 
 add_custom_command(
     TARGET ${PROJECT_NAME}

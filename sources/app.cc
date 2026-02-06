@@ -10,6 +10,7 @@
 #include "constants.h"
 #include "renderer.h"
 #include "shader_manager.h"
+#include "ui.h"
 
 namespace rc {
 
@@ -42,6 +43,7 @@ App::App() {
   ShaderManager::Instance().LoadShaders();
   renderer_ = std::make_unique<Renderer>();
   renderer_->Initialize();
+  ui_ = std::make_unique<Ui>(window_, renderer_.get());
 }
 
 App::~App() {
@@ -65,8 +67,8 @@ std::pair<float, float> App::GetCursorPosition() {
   return {static_cast<float>(position_x), static_cast<float>(position_y)};
 }
 
-bool App::LMBPressed() {
-  return glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+bool App::RMBPressed() {
+  return glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
 }
 
 void App::EndFrame() {
