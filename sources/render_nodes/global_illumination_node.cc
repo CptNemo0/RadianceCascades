@@ -17,9 +17,11 @@
 namespace rc {
 
 GlobalIlluminationNode::GlobalIlluminationNode(
+  GlobalIlluminationNode::Parameters& params,
   std::initializer_list<RenderNode*> inputs)
-  : RenderNode(inputs), gi_render_target_(std::make_unique<RenderTarget>(
-                          rc::gScreenWidth, rc::gScreenHeight)),
+  : RenderNode(inputs), parameters_(params),
+    gi_render_target_(
+      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
     previous_frame_(
       std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
     noise_texture_(rc::GetNoiseTexture(rc::gScreenWidth, rc::gScreenHeight)) {
@@ -66,6 +68,7 @@ void GlobalIlluminationNode::UpdateUniforms() {
   shader->setInt("ray_count", parameters_.ray_count);
   shader->setFloat("one_over_ray_count", parameters_.one_over_ray_count);
   shader->setFloat("angle_step", parameters_.angle_step);
+  shader->setFloat("noise", parameters_.noise_amount);
   parameters_.dirty = false;
 }
 

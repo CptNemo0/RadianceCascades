@@ -20,16 +20,18 @@ namespace rc {
 class RadianceCascadesNode : public RenderNode {
   public:
     struct Parameters {
-        i32 base_ray_count = 16;
+        i32 base_ray_count = 64;
         i32 cascade_count = static_cast<int>(
           std::ceil(std::log(std::sqrt(rc::gScreenWidth * rc::gScreenWidth +
                                        rc::gScreenHeight * rc::gScreenHeight)) /
                     std::log(rc::gBaseRayCount)));
+
         f32 s_rgb = 2.1;
         bool dirty = true;
     };
 
-    RadianceCascadesNode(std::initializer_list<RenderNode*> inputs);
+    RadianceCascadesNode(Parameters& parameters,
+                         std::initializer_list<RenderNode*> inputs);
 
     virtual void Forward() override;
 
@@ -43,8 +45,7 @@ class RadianceCascadesNode : public RenderNode {
 
   private:
     void UpdateUniforms();
-
-    Parameters parameters_;
+    Parameters& parameters_;
     std::unique_ptr<RenderTarget> render_target_1_;
     std::unique_ptr<RenderTarget> render_target_2_;
     std::array<RenderTarget*, 2> render_targets_;

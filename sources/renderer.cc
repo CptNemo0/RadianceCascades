@@ -41,13 +41,13 @@ void Renderer::Initialize() {
 
   std::unique_ptr<rc::GlobalIlluminationNode> gi_node =
     std::make_unique<rc::GlobalIlluminationNode>(
-      std::initializer_list<rc::RenderNode*>{canvas_node.get(),
-                                             sdf_node.get()});
+      global_illumination_params_, std::initializer_list<rc::RenderNode*>{
+                                     canvas_node.get(), sdf_node.get()});
 
   std::unique_ptr<rc::RadianceCascadesNode> rc_node =
     std::make_unique<rc::RadianceCascadesNode>(
-      std::initializer_list<rc::RenderNode*>{canvas_node.get(),
-                                             sdf_node.get()});
+      cascades_params_, std::initializer_list<rc::RenderNode*>{
+                          canvas_node.get(), sdf_node.get()});
 
   cascades_pipeline_.push_back(canvas_node.get());
   cascades_pipeline_.push_back(uv_colorspace_node.get());

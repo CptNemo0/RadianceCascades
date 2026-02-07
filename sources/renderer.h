@@ -6,6 +6,8 @@
 
 #include "aliasing.h"
 #include "canvas.h"
+#include "render_nodes/global_illumination_node.h"
+#include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
 
 namespace rc {
@@ -35,6 +37,8 @@ class Renderer {
 
     Mode mode_ = Mode::kGi;
     std::unique_ptr<rc::Canvas> canvas_;
+    GlobalIlluminationNode::Parameters global_illumination_params_;
+    RadianceCascadesNode::Parameters cascades_params_;
     std::vector<std::unique_ptr<RenderNode>> nodes_;
     std::vector<RenderNode*> cascades_pipeline_;
     std::vector<RenderNode*> gi_pipeline_;

@@ -20,15 +20,17 @@ class GlobalIlluminationNode : public RenderNode {
   public:
     struct Parameters {
         bool dirty{true};
+        float noise_amount = 0.5;
         i32 step_count = 128;
         f32 proximity_epsilon = 0.00001f;
         i32 ray_count = 32;
         f32 one_over_ray_count = 1.0f / ray_count;
         f32 angle_step =
-          static_cast<float>(std::numbers::pi) * one_over_ray_count;
+          static_cast<float>(std::numbers::pi) * 2.0f * one_over_ray_count;
     };
 
-    GlobalIlluminationNode(std::initializer_list<RenderNode*> inputs);
+    GlobalIlluminationNode(Parameters& params,
+                           std::initializer_list<RenderNode*> inputs);
 
     virtual void Forward() override;
 
@@ -42,8 +44,7 @@ class GlobalIlluminationNode : public RenderNode {
 
   private:
     void UpdateUniforms();
-
-    Parameters parameters_;
+    Parameters& parameters_;
     std::unique_ptr<RenderTarget> gi_render_target_;
     std::unique_ptr<RenderTarget> previous_frame_;
     std::unique_ptr<Texture> noise_texture_;

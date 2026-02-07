@@ -87,13 +87,43 @@ void Ui::Render() {
     renderer_->mode_ = static_cast<Renderer::Mode>(current_mode_index);
   }
 
-  // Stage to render
   switch (renderer_->mode_) {
   case Renderer::Mode::kGi:
     if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
                          renderer_->gi_pipeline_.size() - 1)) {
     }
+
+    if (ImGui::SliderInt("Step count",
+                         &renderer_->global_illumination_params_.step_count, 1,
+                         64)) {
+      renderer_->global_illumination_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat(
+          "Proximity threshold",
+          &renderer_->global_illumination_params_.proximity_epsilon, 0.00001f,
+          0.05f, "%.5f")) {
+      renderer_->global_illumination_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Ray count",
+                         &renderer_->global_illumination_params_.ray_count, 1,
+                         64)) {
+      renderer_->global_illumination_params_.dirty = true;
+      renderer_->global_illumination_params_.one_over_ray_count =
+        1.0f / renderer_->global_illumination_params_.ray_count;
+      renderer_->global_illumination_params_.angle_step =
+        static_cast<float>(std::numbers::pi) * 2.0f *
+        renderer_->global_illumination_params_.one_over_ray_count;
+    }
+
+    if (ImGui::SliderFloat("Noise amount",
+                           &renderer_->global_illumination_params_.noise_amount,
+                           0.0f, 1.0f, "%.2f")) {
+      renderer_->global_illumination_params_.dirty = true;
+    }
     break;
+
   case Renderer::Mode::kRc:
     if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
                          renderer_->cascades_pipeline_.size() - 1)) {

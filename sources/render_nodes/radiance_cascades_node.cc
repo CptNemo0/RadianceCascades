@@ -17,9 +17,11 @@
 namespace rc {
 
 RadianceCascadesNode::RadianceCascadesNode(
+  RadianceCascadesNode::Parameters& params,
   std::initializer_list<RenderNode*> inputs)
-  : RenderNode(inputs), render_target_1_(std::make_unique<RenderTarget>(
-                          rc::gScreenWidth, rc::gScreenHeight)),
+  : RenderNode(inputs), parameters_(params),
+    render_target_1_(
+      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
     render_target_2_(
       std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)) {
   const rc::Shader* shader_rc =
