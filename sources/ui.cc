@@ -1,8 +1,6 @@
 #include "ui.h"
 
-#include <array>
 #include <cstddef>
-#include <print>
 
 #include "constants.h"
 #include "glm/fwd.hpp"
@@ -11,7 +9,6 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
-#include <string>
 
 #include "aliasing.h"
 #include "renderer.h"
@@ -154,12 +151,6 @@ void Ui::Render() {
                            0.0f, 2.0f, "%.2f")) {
       renderer_->cascades_params_.dirty = true;
     }
-
-    if (ImGui::SliderFloat("Magic", &renderer_->cascades_params_.magic, 0.0f,
-                           0.01f, "%.4f")) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
     break;
   case Renderer::Mode::kModeNumber:
     break;

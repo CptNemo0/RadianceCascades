@@ -29,9 +29,9 @@ RadianceCascadesNode::RadianceCascadesNode(
   shader_rc->setVec2("resolution",
                      glm::vec2(static_cast<float>(rc::gScreenWidth),
                                static_cast<float>(rc::gScreenHeight)));
-  shader_rc->setInt("sceneTexture", 0);
-  shader_rc->setInt("distanceTexture", 1);
-  shader_rc->setInt("lastTexture", 2);
+  shader_rc->setInt("color_texture", 0);
+  shader_rc->setInt("sdf_texture", 1);
+  shader_rc->setInt("upper_cascade_texture", 2);
   render_targets_[0] = render_target_1_.get();
   render_targets_[1] = render_target_2_.get();
 }
@@ -61,9 +61,8 @@ void RadianceCascadesNode::UpdateUniforms() {
   const rc::Shader* shader_rc =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
   shader_rc->setFloat("base_ray_count", parameters_.base_ray_count);
-  shader_rc->setFloat("cascadeCount", parameters_.cascade_count);
+  shader_rc->setFloat("cascade_count", parameters_.cascade_count);
   shader_rc->setFloat("overlap", parameters_.overlap);
-  shader_rc->setFloat("magic", parameters_.magic);
   shader_rc->setInt("step_count", parameters_.step_count);
   shader_rc->setInt("proximity_epsilon", parameters_.proximity_epsilon);
   parameters_.dirty = false;
