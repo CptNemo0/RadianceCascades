@@ -18,7 +18,7 @@ uniform sampler2D noise_texture;
 uniform float noise;
 uniform float time;
 
-float whole = 3.141592 * 2.0;
+const float whole = 3.141592 * 2.0;
 
 bool out_of_bounds(vec2 sample_uv) {
     return sample_uv.x < 0.0 || sample_uv.x > 1.0 || sample_uv.y < 0.0 || sample_uv.y > 1.0;

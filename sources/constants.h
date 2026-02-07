@@ -23,8 +23,6 @@ inline constexpr float gOneOverHeight = 1.0f / gScreenHeight;
 // the box. Typical C++ L.
 inline const u64 gJfaSteps =
   std::ceil(std::log2(std::max(gScreenHeight, gScreenWidth)));
-inline const u64 gCascadeLevels = 7;
-inline const u64 gBaseRayCount = 4;
 
 inline constexpr u64 gMaxBrushRadius = 50;
 

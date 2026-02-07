@@ -20,13 +20,12 @@ namespace rc {
 class RadianceCascadesNode : public RenderNode {
   public:
     struct Parameters {
-        i32 base_ray_count = 64;
-        i32 cascade_count = static_cast<int>(
-          std::ceil(std::log(std::sqrt(rc::gScreenWidth * rc::gScreenWidth +
-                                       rc::gScreenHeight * rc::gScreenHeight)) /
-                    std::log(rc::gBaseRayCount)));
-
-        f32 s_rgb = 2.1;
+        i32 step_count = 32;
+        i32 base_ray_count = 4;
+        i32 cascade_count = 5;
+        f32 overlap = 0.17f;
+        f32 magic = 0.01f;
+        f32 proximity_epsilon = 0.0001f;
         bool dirty = true;
     };
 

@@ -128,6 +128,38 @@ void Ui::Render() {
     if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
                          renderer_->cascades_pipeline_.size() - 1)) {
     }
+
+    if (ImGui::SliderInt("Step count", &renderer_->cascades_params_.step_count,
+                         1, 64)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat("Proximity threshold",
+                           &renderer_->cascades_params_.proximity_epsilon,
+                           0.00001f, 0.05f, "%.5f")) {
+      renderer_->global_illumination_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Base rays count",
+                         &renderer_->cascades_params_.base_ray_count, 4, 64)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Cascade count",
+                         &renderer_->cascades_params_.cascade_count, 1, 16)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat("Ray overlap", &renderer_->cascades_params_.overlap,
+                           0.0f, 2.0f, "%.2f")) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat("Magic", &renderer_->cascades_params_.magic, 0.0f,
+                           0.01f, "%.4f")) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
     break;
   case Renderer::Mode::kModeNumber:
     break;

@@ -35,7 +35,7 @@ class Renderer {
   private:
     friend class Ui;
 
-    Mode mode_ = Mode::kGi;
+    Mode mode_ = Mode::kRc;
     std::unique_ptr<rc::Canvas> canvas_;
     GlobalIlluminationNode::Parameters global_illumination_params_;
     RadianceCascadesNode::Parameters cascades_params_;

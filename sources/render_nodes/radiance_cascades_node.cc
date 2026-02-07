@@ -27,7 +27,8 @@ RadianceCascadesNode::RadianceCascadesNode(
   const rc::Shader* shader_rc =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
   shader_rc->setVec2("resolution",
-                     glm::vec2(rc::gScreenWidth, rc::gScreenHeight));
+                     glm::vec2(static_cast<float>(rc::gScreenWidth),
+                               static_cast<float>(rc::gScreenHeight)));
   shader_rc->setInt("sceneTexture", 0);
   shader_rc->setInt("distanceTexture", 1);
   shader_rc->setInt("lastTexture", 2);
@@ -43,8 +44,8 @@ void RadianceCascadesNode::Forward() {
 
   // Last frame is second in the rc_render_targets array.
   for (int i{parameters_.cascade_count - 1}; i > -1; --i) {
-    shader->setFloat("cascadeIndex", i);
-    shader->setBool("lastIndex", i == 0);
+    shader->setInt("cascade_index", i);
+    shader->setBool("base_level", i == 0);
     render_targets_[0]->Bind();
     render_targets_[0]->ClearDefault();
     render_targets_[1]->BindTexture(GL_TEXTURE2);
@@ -59,9 +60,12 @@ void RadianceCascadesNode::UpdateUniforms() {
   }
   const rc::Shader* shader_rc =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
-  shader_rc->setFloat("base", parameters_.base_ray_count);
+  shader_rc->setFloat("base_ray_count", parameters_.base_ray_count);
   shader_rc->setFloat("cascadeCount", parameters_.cascade_count);
-  shader_rc->setFloat("srgb", parameters_.s_rgb);
+  shader_rc->setFloat("overlap", parameters_.overlap);
+  shader_rc->setFloat("magic", parameters_.magic);
+  shader_rc->setInt("step_count", parameters_.step_count);
+  shader_rc->setInt("proximity_epsilon", parameters_.proximity_epsilon);
   parameters_.dirty = false;
 }
 
