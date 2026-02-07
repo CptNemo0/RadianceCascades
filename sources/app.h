@@ -44,7 +44,7 @@ class App {
 
     GLFWwindow* window_{};
 
-    Renderer* renderer() {
+    Renderer* scene_renderer() {
       return renderer_.get();
     }
 

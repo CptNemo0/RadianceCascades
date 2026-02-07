@@ -1,5 +1,7 @@
 #include "ui.h"
 
+#include <array>
+#include <cstddef>
 #include <print>
 
 #include "constants.h"
@@ -9,9 +11,17 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
+#include <string>
 
 #include "aliasing.h"
 #include "renderer.h"
+
+namespace {
+
+// Imgui wants this old format...
+const char* gModeStrings[] = {"Global illumination", "Radiance cascades"};
+
+} // namespace
 
 namespace rc {
 
@@ -22,23 +32,16 @@ Ui::Ui(GLFWwindow* window, Renderer* renderer)
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
   (void)io;
-  io.ConfigFlags |=
-    ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-  // 2. Setup Dear ImGui style
   ImGui::StyleColorsDark();
-
-  // 3. Setup Platform/Renderer backends
-  // Install_Callbacks=true will install GLFW callbacks and chain to existing
-  // ones.
   ImGui_ImplGlfw_InitForOpenGL(window, true);
-
-  // Assuming OpenGL 3.3+. Adjust version string "#version 330" if needed.
   ImGui_ImplOpenGL3_Init("#version 430");
 
   if (renderer_) {
     brush_color_ = renderer->canvas_->brush_color_;
     brush_size_ = renderer->canvas_->brush_radius_;
+    last_pipeline_step_ = renderer_->gi_pipeline_.size() - 1;
   }
 }
 
@@ -64,21 +67,40 @@ void Ui::Render() {
               static_cast<f64>(ImGui::GetIO().Framerate));
   ImGui::Separator();
 
-  ImGui::Text("Controls");
-  if (ImGui::ColorEdit3("Brush color", glm::value_ptr(brush_color_))) {
-    renderer_->canvas_->set_brush_color(brush_color_);
+  if (ImGui::ColorEdit3("Brush color",
+                        glm::value_ptr(renderer_->canvas_->brush_color_))) {
+    renderer_->canvas_->first_ = true;
   }
 
-  if (ImGui::SliderFloat("Brush size", &brush_size_, 0.0f,
+  if (ImGui::SliderFloat("Brush size", &renderer_->canvas_->brush_radius_, 0.0f,
                          rc::gMaxBrushRadius)) {
-    renderer_->canvas_->set_brush_radius(brush_size_);
+    renderer_->canvas_->first_ = true;
   }
 
-  const char* mode_names[] = {"Global Illumination", "Radiance Cascades"};
+  if (ImGui::Checkbox("Eraser", &renderer_->canvas()->eraser_)) {
+    renderer_->canvas()->first_ = true;
+  }
+
   int current_mode_index = static_cast<int>(renderer_->mode_);
-  if (ImGui::Combo("Pipeline Mode", &current_mode_index, mode_names,
-                   IM_ARRAYSIZE(mode_names))) {
+  if (ImGui::Combo("Pipeline Mode", &current_mode_index, gModeStrings,
+                   static_cast<size_t>(Renderer::Mode::kModeNumber))) {
     renderer_->mode_ = static_cast<Renderer::Mode>(current_mode_index);
+  }
+
+  // Stage to render
+  switch (renderer_->mode_) {
+  case Renderer::Mode::kGi:
+    if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
+                         renderer_->gi_pipeline_.size() - 1)) {
+    }
+    break;
+  case Renderer::Mode::kRc:
+    if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
+                         renderer_->cascades_pipeline_.size() - 1)) {
+    }
+    break;
+  case Renderer::Mode::kModeNumber:
+    break;
   }
 
   ImGui::End();

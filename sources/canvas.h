@@ -57,10 +57,12 @@ class Canvas {
     u64 height_;
     u64 width_;
 
-    u64 brush_radius_;
+    float brush_radius_;
     glm::vec3 brush_color_;
 
     bool first_{true};
+
+    bool eraser_{false};
 
     std::chrono::high_resolution_clock::time_point last_draw_;
 

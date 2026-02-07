@@ -24,6 +24,7 @@ class Ui {
 
     glm::vec3 brush_color_;
     float brush_size_;
+    i32 last_pipeline_step_;
 };
 
 } // namespace rc

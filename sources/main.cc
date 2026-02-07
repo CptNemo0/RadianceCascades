@@ -9,7 +9,6 @@
 #include <print>
 
 #include "app.h"
-#include "canvas.h"
 #include "renderer.h"
 #include "ui.h"
 
@@ -19,12 +18,7 @@ int main() {
 
     while (app.ShouldRun()) {
       app.ProcessInput();
-      if (app.RMBPressed()) {
-        const auto [x, y] = app.GetCursorPosition();
-        app.renderer()->canvas()->RegisterPoint(static_cast<float>(x),
-                                                static_cast<float>(y));
-      }
-      app.renderer()->Render();
+      app.scene_renderer()->Render();
       app.ui()->Render();
       app.EndFrame();
     }

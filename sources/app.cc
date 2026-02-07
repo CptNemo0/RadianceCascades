@@ -54,6 +54,12 @@ void App::ProcessInput() {
   if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window_, true);
   }
+
+  if (RMBPressed()) {
+    const auto [x, y] = GetCursorPosition();
+    scene_renderer()->canvas()->RegisterPoint(static_cast<float>(x),
+                                              static_cast<float>(y));
+  }
 }
 
 bool App::ShouldRun() {

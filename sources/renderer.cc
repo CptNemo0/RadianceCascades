@@ -1,5 +1,11 @@
 #include "renderer.h"
 
+#include <initializer_list>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "aliasing.h"
 #include "canvas.h"
 #include "constants.h"
 #include "render_nodes/canvas_node.h"
@@ -9,10 +15,6 @@
 #include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
 #include "shader_manager.h"
-#include <initializer_list>
-#include <memory>
-#include <utility>
-#include <vector>
 
 namespace rc {
 
@@ -65,6 +67,8 @@ void Renderer::Initialize() {
   nodes_.push_back(std::move(sdf_node));
   nodes_.push_back(std::move(gi_node));
   nodes_.push_back(std::move(rc_node));
+
+  stage_to_render_ = gi_pipeline_.size() - 1;
 }
 
 void Renderer::Render() {
@@ -74,10 +78,20 @@ void Renderer::Render() {
       return gi_pipeline_;
     case Mode::kRc:
       return cascades_pipeline_;
+    case Mode::kModeNumber:
+      return cascades_pipeline_;
     }
   }();
 
-  CopyNode copy_node{{pipeline.back()}, true};
+  CopyNode copy_node{{[pipeline, this]() {
+                       if (stage_to_render_ <
+                           static_cast<i32>(gi_pipeline_.size())) {
+                         return pipeline[stage_to_render_];
+                       } else {
+                         return pipeline.back();
+                       }
+                     }()},
+                     true};
 
   for (const auto& node : pipeline) {
     node->Forward();

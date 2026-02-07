@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "aliasing.h"
 #include "canvas.h"
 #include "render_nodes/render_node.h"
 
@@ -14,8 +15,9 @@ class Ui;
 class Renderer {
   public:
     enum class Mode {
-      kGi,
-      kRc
+      kGi = 0,
+      kRc = 1,
+      kModeNumber
     };
 
     Renderer();
@@ -31,11 +33,12 @@ class Renderer {
   private:
     friend class Ui;
 
-    Mode mode_ = Mode::kRc;
+    Mode mode_ = Mode::kGi;
     std::unique_ptr<rc::Canvas> canvas_;
     std::vector<std::unique_ptr<RenderNode>> nodes_;
     std::vector<RenderNode*> cascades_pipeline_;
     std::vector<RenderNode*> gi_pipeline_;
+    i32 stage_to_render_;
 };
 
 } // namespace rc

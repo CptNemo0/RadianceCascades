@@ -74,9 +74,10 @@ void Canvas::Draw() {
   render_targets_[1]->BindTexture(GL_TEXTURE0);
   canvas_shader->setFloat("width", static_cast<float>(width_));
   canvas_shader->setFloat("height_", static_cast<float>(height_));
-  canvas_shader->setFloat("brush_radius", static_cast<float>(brush_radius_));
+  canvas_shader->setFloat("brush_radius", brush_radius_);
   canvas_shader->setVec2("position", selected_position_);
   canvas_shader->setVec3("brush_color", brush_color_);
+  canvas_shader->setBool("eraser", eraser_);
   Surface::Instnace().Draw();
 
   std::swap(render_targets_[0], render_targets_[1]);

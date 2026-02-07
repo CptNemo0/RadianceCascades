@@ -11,6 +11,7 @@ uniform float height;
 uniform vec3 brush_color;
 uniform vec2 position;
 uniform float brush_radius;
+uniform bool eraser;
 
 void main()
 {
@@ -19,7 +20,11 @@ void main()
     float dist = dot(diff, diff);
 
     if (dist < (brush_radius * brush_radius + 1)) {
-        color_ = vec4(brush_color, 1.0);
+        if (eraser) {
+            color_ = vec4(0.0, 0.0, 0.0, 0.0);
+        } else {
+            color_ = vec4(brush_color, 1.0);
+        }
         return;
     }
 
