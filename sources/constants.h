@@ -26,7 +26,8 @@ inline const u64 gJfaSteps =
 
 inline constexpr u64 gMaxBrushRadius = 50;
 
-inline constexpr f32 gMaxFlameSize = 50;
+// 10% of the screen
+inline constexpr f32 gMaxFlameSize = 0.4;
 
 inline constexpr u64 gMaxFlameCount = 16;
 

@@ -62,10 +62,14 @@ void Ui::Render() {
     renderer_->canvas_->first_ = true;
   }
 
-  if (ImGui::SliderFloat("Brush size", &renderer_->canvas_->brush_radius_, 0.0f,
-                         rc::gMaxBrushRadius)) {
-    renderer_->canvas_->first_ = true;
-    flame_generator_->flame_size_ = renderer_->canvas_->brush_radius_;
+  if (flame_generator_->register_) {
+    ImGui::SliderFloat("Brush size", &flame_generator_->flame_size_, 0.0f,
+                       rc::gMaxBrushRadius);
+  } else {
+    if (ImGui::SliderFloat("Brush size", &renderer_->canvas_->brush_radius_,
+                           0.0f, rc::gMaxBrushRadius)) {
+      renderer_->canvas_->first_ = true;
+    }
   }
 
   if (ImGui::Checkbox("Draw canvas", &renderer_->canvas()->register_)) {
@@ -83,7 +87,7 @@ void Ui::Render() {
 
   if (flame_generator_->turned_on_) {
     ImGui::SliderFloat("Flame speed", &flame_generator_->flame_speed_, 0.0f,
-                       2.0f);
+                       1.0f);
   }
 
   if (ImGui::Checkbox("Eraser", &renderer_->canvas()->eraser_)) {

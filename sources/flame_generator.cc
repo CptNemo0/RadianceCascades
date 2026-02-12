@@ -17,7 +17,7 @@
 namespace rc {
 
 FlameGenerator::FlameGenerator()
-  : noise_texture_(GetFBMTexture(512, 512, 6.0f, 20.0f)),
+  : noise_texture_(GetFBMTexture(512, 512 * 4, 6.0f, 5.0f)),
     app_observation_(this) {
   app_observation_.Observe(&(App::Instance()));
 
@@ -54,8 +54,8 @@ void FlameGenerator::GetMousePositionOnRMB(const glm::vec2& position) {
 
 void FlameGenerator::RenderFlames() {
   if (!turned_on_) {
-    combined_rts_[1]->Bind();
-    combined_rts_[1]->Clear();
+    combined_rts_[0]->Bind();
+    combined_rts_[0]->Clear();
     return;
   }
 
@@ -65,7 +65,8 @@ void FlameGenerator::RenderFlames() {
   render_target_fire_.Clear();
   noise_texture_->BindTexture(GL_TEXTURE0);
   flame_shader->setFloat("time", App::Instance().GetTime());
-  flame_shader->setFloat("size", flame_size_ / rc::gScreenWidth);
+  flame_shader->setFloat("percentage",
+                         (flame_size_ / gMaxBrushRadius) * gMaxFlameSize);
   flame_shader->setFloat("speed", flame_speed_);
   Surface::Instnace().Draw();
 

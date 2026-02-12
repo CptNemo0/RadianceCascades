@@ -44,7 +44,7 @@ class FlameGenerator : public App::Observer {
 
     u64 next_index_ = 0;
     float flame_size_ = 10.0f;
-    float flame_speed_ = 1.0f;
+    float flame_speed_ = 0.2f;
 
     i64 time_between_fire_placements_ = 500;
     time_point last_placement_time_{};
