@@ -36,7 +36,7 @@ void RenderTarget::Bind() const {
 }
 
 void RenderTarget::Clear(int flags) const {
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(flags);
 }
 

@@ -5,3 +5,5 @@ to_uv_colorspace
 sdf
 global_illumination
 radiance_cascade
+flame
+overlay

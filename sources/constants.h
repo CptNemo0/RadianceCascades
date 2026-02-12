@@ -26,6 +26,10 @@ inline const u64 gJfaSteps =
 
 inline constexpr u64 gMaxBrushRadius = 50;
 
+inline constexpr f32 gMaxFlameSize = 50;
+
+inline constexpr u64 gMaxFlameCount = 16;
+
 // Full-screen quad vertices:
 // Positions (x, y, z) | Texture Coords (u, v)
 inline constexpr std::array<f32, 30> full_screen_quad_vertices = {

@@ -8,15 +8,17 @@
 #include "glm/glm.hpp"
 
 #include "aliasing.h"
+#include "app.h"
 #include "constants.h"
 #include "render_target.h"
+#include "scoped_observation.h"
 
 namespace rc {
 
 class Ui;
 
 // The main drawing class.
-class Canvas {
+class Canvas : public App::Observer {
   public:
     Canvas(u64 height, u64 width, u64 brush_radius = 10,
            glm::vec3 brush_color = {1.0f, 1.0f, 1.0f});
@@ -33,7 +35,7 @@ class Canvas {
       return brush_radius_;
     }
 
-    void RegisterPoint(float x, float y);
+    virtual void GetMousePositionOnRMB(const glm::vec2& point) override;
 
     void Draw();
 
@@ -61,9 +63,8 @@ class Canvas {
     glm::vec3 brush_color_;
 
     bool first_{true};
-
     bool eraser_{false};
-
+    bool register_{true};
     std::chrono::high_resolution_clock::time_point last_draw_;
 
     glm::vec2 previous_position_;
@@ -75,6 +76,8 @@ class Canvas {
                                             rc::gScreenHeight};
     std::array<rc::RenderTarget*, 2> render_targets_{&render_target_canvas_1,
                                                      &render_target_canvas_2};
+
+    ScopedObservation<Canvas, App> app_observation_;
 };
 
 } // namespace rc

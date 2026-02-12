@@ -41,8 +41,8 @@ void main() {
     vec2 probe_center = (probe_coord + 0.5) * spacing;
     vec2 probe_uv = probe_center / resolution;
 
-    float interval_start = base_level ? 0.0 : (pow(base_ray_count, cascade_index - 1.0)) / resolution.x; // !
-    float interval_length = pow(base_ray_count, cascade_index) / resolution.x; // !
+    float interval_start = base_level ? 0.0 : (pow(base_ray_count, cascade_index)) / resolution.x; // !
+    float interval_length = pow(base_ray_count, cascade_index + 1) / resolution.x; // !
     interval_length *= (1 + overlap);
 
     // Multiply by base_ray_count to further subdivide.

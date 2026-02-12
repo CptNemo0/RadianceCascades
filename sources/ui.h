@@ -1,16 +1,12 @@
 #ifndef RC_UI_H_
 #define RC_UI_H_
 
-#include "glm/ext/vector_float3.hpp"
-#include "glm/glm.hpp"
-
-#include "aliasing.h"
-
 struct GLFWwindow;
 
 namespace rc {
 
 class Renderer;
+class FlameGenerator;
 
 class Ui {
   public:
@@ -19,12 +15,8 @@ class Ui {
     void Render();
 
   private:
-    GLFWwindow* window_ = nullptr;
     Renderer* renderer_;
-
-    glm::vec3 brush_color_;
-    float brush_size_;
-    i32 last_pipeline_step_;
+    FlameGenerator* flame_generator_;
 };
 
 } // namespace rc

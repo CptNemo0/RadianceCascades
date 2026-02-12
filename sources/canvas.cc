@@ -4,6 +4,7 @@
 #include <array>
 #include <chrono>
 
+#include "app.h"
 #include "glad/include/glad/glad.h"
 #include "glm/fwd.hpp"
 
@@ -20,12 +21,20 @@ namespace rc {
 Canvas::Canvas(u64 height, u64 width, u64 brush_radius, glm::vec3 brush_color)
   : height_(height), width_(width),
     brush_radius_(std::clamp(brush_radius, 0uz, gMaxBrushRadius)),
-    brush_color_(brush_color) {
+    brush_color_(brush_color), app_observation_(this) {
+  app_observation_.Observe(&(App::Instance()));
 }
 
-void Canvas::RegisterPoint(float x, float y) {
+void Canvas::GetMousePositionOnRMB(const glm::vec2& position) {
+  if (!register_) {
+    return;
+  }
+  float x = position.x;
+  float y = position.y;
+
   // Reverse y position. Without it moving mouse up results in the drawing
   // position going down.
+
   y = height_ - y;
 
   const glm::vec2 registered_point{x, y};

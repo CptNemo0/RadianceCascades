@@ -8,8 +8,10 @@
 #include "aliasing.h"
 #include "canvas.h"
 #include "constants.h"
+#include "flame_generator.h"
 #include "render_nodes/canvas_node.h"
 #include "render_nodes/copy_node.h"
+#include "render_nodes/fire_node.h"
 #include "render_nodes/global_illumination_node.h"
 #include "render_nodes/jfa_node.h"
 #include "render_nodes/radiance_cascades_node.h"
@@ -19,18 +21,21 @@
 namespace rc {
 
 Renderer::Renderer()
-  : canvas_(
-      std::make_unique<Canvas>(rc::gScreenHeight, rc::gScreenHeight, 10)) {
+  : canvas_(std::make_unique<Canvas>(rc::gScreenHeight, rc::gScreenHeight, 10)),
+    flame_generator_(std::make_unique<FlameGenerator>()) {
 }
 
 void Renderer::Initialize() {
   std::unique_ptr<rc::CanvasNode> canvas_node =
     std::make_unique<rc::CanvasNode>(*(canvas_.get()));
 
+  std::unique_ptr<rc::FireNode> flame_node = std::make_unique<rc::FireNode>(
+    *(flame_generator_.get()), canvas_node.get());
+
   std::unique_ptr<rc::CopyNode> uv_colorspace_node =
     std::make_unique<rc::CopyNode>(
       rc::ShaderManager::ShaderType::kUvColorspace,
-      std::initializer_list<rc::RenderNode*>{canvas_node.get()});
+      std::initializer_list<rc::RenderNode*>{flame_node.get()});
 
   std::unique_ptr<rc::JfaNode> jfa_node =
     std::make_unique<rc::JfaNode>(uv_colorspace_node.get());
@@ -41,27 +46,30 @@ void Renderer::Initialize() {
 
   std::unique_ptr<rc::GlobalIlluminationNode> gi_node =
     std::make_unique<rc::GlobalIlluminationNode>(
-      global_illumination_params_, std::initializer_list<rc::RenderNode*>{
-                                     canvas_node.get(), sdf_node.get()});
+      global_illumination_params_,
+      std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
 
   std::unique_ptr<rc::RadianceCascadesNode> rc_node =
     std::make_unique<rc::RadianceCascadesNode>(
-      cascades_params_, std::initializer_list<rc::RenderNode*>{
-                          canvas_node.get(), sdf_node.get()});
+      cascades_params_,
+      std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
 
   cascades_pipeline_.push_back(canvas_node.get());
+  cascades_pipeline_.push_back(flame_node.get());
   cascades_pipeline_.push_back(uv_colorspace_node.get());
   cascades_pipeline_.push_back(jfa_node.get());
   cascades_pipeline_.push_back(sdf_node.get());
   cascades_pipeline_.push_back(rc_node.get());
 
   gi_pipeline_.push_back(canvas_node.get());
+  gi_pipeline_.push_back(flame_node.get());
   gi_pipeline_.push_back(uv_colorspace_node.get());
   gi_pipeline_.push_back(jfa_node.get());
   gi_pipeline_.push_back(sdf_node.get());
   gi_pipeline_.push_back(gi_node.get());
 
   nodes_.push_back(std::move(canvas_node));
+  nodes_.push_back(std::move(flame_node));
   nodes_.push_back(std::move(uv_colorspace_node));
   nodes_.push_back(std::move(jfa_node));
   nodes_.push_back(std::move(sdf_node));
@@ -83,20 +91,21 @@ void Renderer::Render() {
     }
   }();
 
-  CopyNode copy_node{{[pipeline, this]() {
-                       if (stage_to_render_ <
-                           static_cast<i32>(gi_pipeline_.size())) {
-                         return pipeline[stage_to_render_];
-                       } else {
-                         return pipeline.back();
-                       }
-                     }()},
-                     true};
+  CopyNode to_screen_node{{[pipeline, this]() {
+                            if (stage_to_render_ <
+                                static_cast<i32>(gi_pipeline_.size())) {
+                              return pipeline[stage_to_render_];
+                            } else {
+                              return pipeline.back();
+                            }
+                          }()},
+                          true};
 
   for (const auto& node : pipeline) {
     node->Forward();
   }
-  copy_node.Forward();
+
+  to_screen_node.Forward();
 }
 
 } // namespace rc

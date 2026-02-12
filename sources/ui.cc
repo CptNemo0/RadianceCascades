@@ -2,8 +2,6 @@
 
 #include <cstddef>
 
-#include "constants.h"
-#include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui/imgui.h"
 #include "imgui_impl_glfw.h"
@@ -11,6 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include "aliasing.h"
+#include "constants.h"
 #include "renderer.h"
 
 namespace {
@@ -23,7 +22,7 @@ const char* gModeStrings[] = {"Global illumination", "Radiance cascades"};
 namespace rc {
 
 Ui::Ui(GLFWwindow* window, Renderer* renderer)
-  : window_(window), renderer_(renderer) {
+  : renderer_(renderer), flame_generator_(renderer->flame_generator_.get()) {
   // 1. Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -34,12 +33,6 @@ Ui::Ui(GLFWwindow* window, Renderer* renderer)
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 430");
-
-  if (renderer_) {
-    brush_color_ = renderer->canvas_->brush_color_;
-    brush_size_ = renderer->canvas_->brush_radius_;
-    last_pipeline_step_ = renderer_->gi_pipeline_.size() - 1;
-  }
 }
 
 Ui::~Ui() {
@@ -72,10 +65,30 @@ void Ui::Render() {
   if (ImGui::SliderFloat("Brush size", &renderer_->canvas_->brush_radius_, 0.0f,
                          rc::gMaxBrushRadius)) {
     renderer_->canvas_->first_ = true;
+    flame_generator_->flame_size_ = renderer_->canvas_->brush_radius_;
+  }
+
+  if (ImGui::Checkbox("Draw canvas", &renderer_->canvas()->register_)) {
+    flame_generator_->register_ = false;
+  }
+
+  if (ImGui::Checkbox("Draw flames", &flame_generator_->register_)) {
+    flame_generator_->turned_on_ = true;
+    renderer_->canvas()->register_ = false;
+  }
+
+  if (ImGui::Checkbox("Display Flames", &flame_generator_->turned_on_)) {
+    renderer_->canvas()->first_ = true;
+  }
+
+  if (flame_generator_->turned_on_) {
+    ImGui::SliderFloat("Flame speed", &flame_generator_->flame_speed_, 0.0f,
+                       2.0f);
   }
 
   if (ImGui::Checkbox("Eraser", &renderer_->canvas()->eraser_)) {
     renderer_->canvas()->first_ = true;
+    flame_generator_->eraser_ = renderer_->canvas()->eraser_;
   }
 
   int current_mode_index = static_cast<int>(renderer_->mode_);

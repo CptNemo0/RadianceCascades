@@ -5,18 +5,29 @@
 #define GLFW_INCLUDE_NONE
 #endif // !GLFW_INCLUDE_NONE
 
+#include "glm/fwd.hpp"
 #include <GLFW/glfw3.h>
 
 #include <memory>
-#include <utility>
+#include <vector>
 
 namespace rc {
 
 class Ui;
 class Renderer;
 
+// The Big Boss class.
+// It stores the renderers, initializes third party libraries and loads OpenGL.
+// It's responsible for the general flow of the program and interfacing with the
+// window manager.
 class App {
   public:
+    class Observer {
+      public:
+        virtual void GetMousePositionOnRMB(const glm::vec2& point) = 0;
+        virtual ~Observer() = default;
+    };
+
     static App& Instance() {
       static App instance;
       return instance;
@@ -30,11 +41,13 @@ class App {
 
     ~App();
 
+    void Start();
+
     void ProcessInput();
 
     bool ShouldRun();
 
-    std::pair<float, float> GetCursorPosition();
+    glm::vec2 GetCursorPosition();
 
     bool RMBPressed();
 
@@ -52,10 +65,18 @@ class App {
       return ui_.get();
     }
 
+    void AddObserver(Observer* observer);
+
+    void RemoveObserver(Observer* observer);
+
+    void RegisterMousePosition();
+
   private:
     App();
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<Ui> ui_;
+
+    std::vector<Observer*> observers_;
 };
 
 } // namespace rc

@@ -1,13 +1,14 @@
 #ifndef RC_SHADER_MANAGER_H_
 #define RC_SHADER_MANAGER_H_
 
-#include "shader.h"
 #include <array>
 #include <cstddef>
 #include <format>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
+
+#include "shader.h"
 
 namespace rc {
 
@@ -29,6 +30,9 @@ class ShaderManager {
       kGi = 5,
       // Global illumination - radiance cascades approach
       kRc = 6,
+      // Flame shader - produces a singular flame in the middle of the scene.
+      kFlame = 7,
+      kOverlay = 8,
       kTypeNum
     };
 
@@ -59,6 +63,14 @@ class ShaderManager {
 
       if (value == "radiance_cascade") {
         return ShaderType::kRc;
+      }
+
+      if (value == "flame") {
+        return ShaderType::kFlame;
+      }
+
+      if (value == "overlay") {
+        return ShaderType::kOverlay;
       }
 
       throw std::runtime_error(

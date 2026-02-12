@@ -1,11 +1,12 @@
 #include "app.h"
 
 #include "glad/include/glad/glad.h"
+#include "glm/ext/vector_float2.hpp"
 #include <GLFW/glfw3.h>
 
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
-#include <utility>
 
 #include "constants.h"
 #include "renderer.h"
@@ -15,6 +16,13 @@
 namespace rc {
 
 App::App() {
+}
+
+App::~App() {
+  glfwTerminate();
+}
+
+void App::Start() {
   if (!glfwInit()) {
     throw std::runtime_error("Failed to initialize GLFW");
   }
@@ -46,19 +54,13 @@ App::App() {
   ui_ = std::make_unique<Ui>(window_, renderer_.get());
 }
 
-App::~App() {
-  glfwTerminate();
-}
-
 void App::ProcessInput() {
   if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window_, true);
   }
 
   if (RMBPressed()) {
-    const auto [x, y] = GetCursorPosition();
-    scene_renderer()->canvas()->RegisterPoint(static_cast<float>(x),
-                                              static_cast<float>(y));
+    RegisterMousePosition();
   }
 }
 
@@ -66,7 +68,7 @@ bool App::ShouldRun() {
   return !glfwWindowShouldClose(window_);
 };
 
-std::pair<float, float> App::GetCursorPosition() {
+glm::vec2 App::GetCursorPosition() {
   double position_x{};
   double position_y{};
   glfwGetCursorPos(window_, &position_x, &position_y);
@@ -84,6 +86,24 @@ void App::EndFrame() {
 
 float App::GetTime() {
   return static_cast<float>(glfwGetTime());
+}
+
+void App::AddObserver(App::Observer* observer) {
+  observers_.push_back(observer);
+}
+
+void App::RemoveObserver(App::Observer* observer) {
+  if (auto search = std::find(observers_.begin(), observers_.end(), observer);
+      search != observers_.end()) {
+    observers_.erase(search);
+  }
+}
+
+void App::RegisterMousePosition() {
+  const glm::vec2 position = GetCursorPosition();
+  for (auto* observer : observers_) {
+    observer->GetMousePositionOnRMB(position);
+  }
 }
 
 } // namespace rc
