@@ -17,7 +17,7 @@
 namespace rc {
 
 FlameGenerator::FlameGenerator()
-  : noise_texture_(GetFBMTexture(512, 512 * 4, 6.0f, 5.0f)),
+  : noise_texture_(GetFBMTexture(512, 512, 6.0f, 5.0f)),
     app_observation_(this) {
   app_observation_.Observe(&(App::Instance()));
 
@@ -92,7 +92,9 @@ void FlameGenerator::RenderFlames() {
 
     combine_shader->setVec2(
       "offset_1", (position * reverse_resolution - glm::vec2(0.5f, 0.5f)) *
-                    glm::vec2(-1.0f, 1.0f));
+                      glm::vec2(-1.0f, 1.0f) +
+                    glm::vec2(0.0, -0.8f * (flame_size_ / gMaxBrushRadius) *
+                                     gMaxFlameSize * 0.5f));
 
     combined_rts_[0]->BindTexture(GL_TEXTURE1);
     combined_rts_[1]->Bind();

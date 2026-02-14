@@ -9,6 +9,8 @@
 #include "canvas.h"
 #include "constants.h"
 #include "flame_generator.h"
+#include "glad/include/glad/glad.h"
+#include "imgui.h"
 #include "render_nodes/canvas_node.h"
 #include "render_nodes/copy_node.h"
 #include "render_nodes/fire_node.h"
@@ -16,7 +18,9 @@
 #include "render_nodes/jfa_node.h"
 #include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
+#include "render_target.h"
 #include "shader_manager.h"
+#include "surface.h"
 
 namespace rc {
 
@@ -27,31 +31,31 @@ Renderer::Renderer()
 
 void Renderer::Initialize() {
   std::unique_ptr<rc::CanvasNode> canvas_node =
-    std::make_unique<rc::CanvasNode>(*(canvas_.get()));
+    std::make_unique<rc::CanvasNode>("CanvasNode", *(canvas_.get()));
 
   std::unique_ptr<rc::FireNode> flame_node = std::make_unique<rc::FireNode>(
-    *(flame_generator_.get()), canvas_node.get());
+    "FireNode", *(flame_generator_.get()), canvas_node.get());
 
   std::unique_ptr<rc::CopyNode> uv_colorspace_node =
     std::make_unique<rc::CopyNode>(
-      rc::ShaderManager::ShaderType::kUvColorspace,
+      "UVColorspaceNode", rc::ShaderManager::ShaderType::kUvColorspace,
       std::initializer_list<rc::RenderNode*>{flame_node.get()});
 
   std::unique_ptr<rc::JfaNode> jfa_node =
-    std::make_unique<rc::JfaNode>(uv_colorspace_node.get());
+    std::make_unique<rc::JfaNode>("JFANode", uv_colorspace_node.get());
 
   std::unique_ptr<rc::CopyNode> sdf_node = std::make_unique<rc::CopyNode>(
-    rc::ShaderManager::ShaderType::kSdf,
+    "SDFNode", rc::ShaderManager::ShaderType::kSdf,
     std::initializer_list<rc::RenderNode*>{jfa_node.get()});
 
   std::unique_ptr<rc::GlobalIlluminationNode> gi_node =
     std::make_unique<rc::GlobalIlluminationNode>(
-      global_illumination_params_,
+      "GlobalIlluminationNode", global_illumination_params_,
       std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
 
   std::unique_ptr<rc::RadianceCascadesNode> rc_node =
     std::make_unique<rc::RadianceCascadesNode>(
-      cascades_params_,
+      "RadianceCascadesNode", cascades_params_,
       std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
 
   cascades_pipeline_.push_back(canvas_node.get());
@@ -91,21 +95,22 @@ void Renderer::Render() {
     }
   }();
 
-  CopyNode to_screen_node{{[pipeline, this]() {
-                            if (stage_to_render_ <
-                                static_cast<i32>(gi_pipeline_.size())) {
-                              return pipeline[stage_to_render_];
-                            } else {
-                              return pipeline.back();
-                            }
-                          }()},
-                          true};
-
   for (const auto& node : pipeline) {
     node->Forward();
   }
 
-  to_screen_node.Forward();
+  ShaderManager::Instance().Use(ShaderManager::ShaderType::kSurface);
+  RenderTarget::BindDefault();
+  RenderTarget::ClearDefault();
+  [pipeline, this]() {
+    if (stage_to_render_ < static_cast<i32>(gi_pipeline_.size())) {
+      return pipeline[stage_to_render_];
+    } else {
+      return pipeline.back();
+    }
+  }()
+    ->BindOutput(GL_TEXTURE0);
+  Surface::Instnace().Draw();
 }
 
 } // namespace rc

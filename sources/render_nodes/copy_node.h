@@ -3,6 +3,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include <string_view>
 
 #include "render_nodes/render_node.h"
 #include "render_target.h"
@@ -16,10 +17,11 @@ namespace rc {
 // argument of a constructor.
 class CopyNode : public RenderNode {
   public:
-    CopyNode(std::initializer_list<RenderNode*> inputs, bool to_screen = false);
-
-    CopyNode(ShaderType copy_shader, std::initializer_list<RenderNode*> inputs,
+    CopyNode(std::string_view name, std::initializer_list<RenderNode*> inputs,
              bool to_screen = false);
+
+    CopyNode(std::string_view name, ShaderType copy_shader,
+             std::initializer_list<RenderNode*> inputs, bool to_screen = false);
 
     virtual void Forward() override;
 

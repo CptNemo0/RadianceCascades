@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "constants.h"
+#include "measurement_manager.h"
 #include "renderer.h"
 #include "shader_manager.h"
 #include "ui.h"
@@ -50,11 +51,12 @@ void App::Start() {
 
   ShaderManager::Instance().LoadShaders();
   renderer_ = std::make_unique<Renderer>();
+  measurement_manager_ = std::make_unique<MeasurementManager>();
   renderer_->Initialize();
   ui_ = std::make_unique<Ui>(window_, renderer_.get());
 }
 
-void App::ProcessInput() {
+void App::StartFrame() {
   if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window_, true);
   }
@@ -82,6 +84,17 @@ bool App::RMBPressed() {
 void App::EndFrame() {
   glfwSwapBuffers(window_);
   glfwPollEvents();
+
+  if (!is_measuring_) {
+    return;
+  }
+
+  if (frames_measured_ == gFramesToMeasure - 1) {
+    StopMeasuring();
+    return;
+  }
+
+  frames_measured_++;
 }
 
 float App::GetTime() {
@@ -104,6 +117,17 @@ void App::RegisterMousePosition() {
   for (auto* observer : observers_) {
     observer->GetMousePositionOnRMB(position);
   }
+}
+
+void App::StartMeasuring() {
+  frames_measured_ = 0;
+  is_measuring_ = true;
+  measurement_manager_->StartMeasuring(gFramesToMeasure);
+}
+
+void App::StopMeasuring() {
+  measurement_manager_->StopMeasuring();
+  is_measuring_ = false;
 }
 
 } // namespace rc

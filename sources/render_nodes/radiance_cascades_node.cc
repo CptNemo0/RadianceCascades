@@ -5,6 +5,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "constants.h"
@@ -13,13 +14,14 @@
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
+#include "timed_scope.h"
 
 namespace rc {
 
 RadianceCascadesNode::RadianceCascadesNode(
-  RadianceCascadesNode::Parameters& params,
+  std::string_view name, RadianceCascadesNode::Parameters& params,
   std::initializer_list<RenderNode*> inputs)
-  : RenderNode(inputs), parameters_(params),
+  : RenderNode(name, inputs), parameters_(params),
     render_target_1_(
       std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
     render_target_2_(
@@ -37,6 +39,7 @@ RadianceCascadesNode::RadianceCascadesNode(
 }
 
 void RadianceCascadesNode::Forward() {
+  TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   const Shader* shader =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
   UpdateUniforms();

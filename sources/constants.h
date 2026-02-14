@@ -27,9 +27,11 @@ inline const u64 gJfaSteps =
 inline constexpr u64 gMaxBrushRadius = 50;
 
 // 10% of the screen
-inline constexpr f32 gMaxFlameSize = 0.4;
+inline constexpr f32 gMaxFlameSize = 0.6;
 
 inline constexpr u64 gMaxFlameCount = 16;
+
+inline constexpr u64 gFramesToMeasure = 1024;
 
 // Full-screen quad vertices:
 // Positions (x, y, z) | Texture Coords (u, v)

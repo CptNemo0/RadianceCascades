@@ -2,6 +2,7 @@
 
 #include <cstddef>
 
+#include "app.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui/imgui.h"
 #include "imgui_impl_glfw.h"
@@ -56,6 +57,18 @@ void Ui::Render() {
               1000.0 / static_cast<f64>(ImGui::GetIO().Framerate),
               static_cast<f64>(ImGui::GetIO().Framerate));
   ImGui::Separator();
+
+  if (!App::Instance().is_measuring_) {
+    if (ImGui::Button("Measure")) {
+      App::Instance().StartMeasuring();
+    }
+
+    if (ImGui::Button("Save Results")) {
+      App::Instance().measurement_manager()->SaveResults();
+    }
+  } else {
+    ImGui::Text("Measuring...");
+  }
 
   if (ImGui::ColorEdit3("Brush color",
                         glm::value_ptr(renderer_->canvas_->brush_color_))) {

@@ -18,6 +18,21 @@ void main()
     vec2 uv1 = uv + offset_1;
     vec2 uv2 = uv + offset_2;
 
+    if (out_of_bounds(uv1) && out_of_bounds(uv2)) {
+        color_ = vec4(0.0);
+        return;
+    }
+
+    if (out_of_bounds(uv2)) {
+        color_ = texture(texture_1, uv1);
+        return;
+    }
+
+    if (out_of_bounds(uv2)) {
+        color_ = texture(texture_2, uv1);
+        return;
+    }
+
     vec4 color1 = texture(texture_1, uv1);
     vec4 color2 = texture(texture_2, uv2);
 

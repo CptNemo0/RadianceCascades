@@ -1,8 +1,11 @@
 #ifndef RC_RENDER_NODES_H_
 #define RC_RENDER_NODES_H_
 
+#include <string_view>
+
 #include "canvas.h"
 #include "render_nodes/render_node.h"
+#include "timed_scope.h"
 
 namespace rc {
 
@@ -10,10 +13,12 @@ namespace rc {
 // It's supposed to be a start of a pipeline so it doesn't accept inputs.
 class CanvasNode : public RenderNode {
   public:
-    explicit CanvasNode(Canvas& canvas) : RenderNode({}), canvas_(canvas) {
+    explicit CanvasNode(std::string_view name, Canvas& canvas)
+      : RenderNode(name, {}), canvas_(canvas) {
     }
 
     virtual void Forward() override {
+      TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
       canvas_.Draw();
     }
 

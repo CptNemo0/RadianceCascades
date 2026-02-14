@@ -4,6 +4,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include <string_view>
 
 #include "app.h"
 #include "constants.h"
@@ -12,14 +13,15 @@
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
+#include "timed_scope.h"
 #include "utility.h"
 
 namespace rc {
 
 GlobalIlluminationNode::GlobalIlluminationNode(
-  GlobalIlluminationNode::Parameters& params,
+  std::string_view name, GlobalIlluminationNode::Parameters& params,
   std::initializer_list<RenderNode*> inputs)
-  : RenderNode(inputs), parameters_(params),
+  : RenderNode(name, inputs), parameters_(params),
     gi_render_target_(
       std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
     previous_frame_(
@@ -35,6 +37,7 @@ GlobalIlluminationNode::GlobalIlluminationNode(
 }
 
 void GlobalIlluminationNode::Forward() {
+  TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   // Not a very pretty hack.
   float time = App::Instance().GetTime() * 1000.f - time_normalizer_;
   if (time > 1000.0f) {

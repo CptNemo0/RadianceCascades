@@ -11,10 +11,13 @@
 #include <memory>
 #include <vector>
 
+#include "aliasing.h"
+
 namespace rc {
 
-class Ui;
+class MeasurementManager;
 class Renderer;
+class Ui;
 
 // The Big Boss class.
 // It stores the renderers, initializes third party libraries and loads OpenGL.
@@ -43,7 +46,7 @@ class App {
 
     void Start();
 
-    void ProcessInput();
+    void StartFrame();
 
     bool ShouldRun();
 
@@ -65,16 +68,31 @@ class App {
       return ui_.get();
     }
 
+    MeasurementManager* measurement_manager() {
+      return measurement_manager_.get();
+    }
+
     void AddObserver(Observer* observer);
 
     void RemoveObserver(Observer* observer);
 
     void RegisterMousePosition();
 
+    void StartMeasuring();
+
+    void StopMeasuring();
+
   private:
+    friend class Ui;
+
     App();
+
+    std::unique_ptr<MeasurementManager> measurement_manager_;
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<Ui> ui_;
+
+    u64 frames_measured_{};
+    bool is_measuring_;
 
     std::vector<Observer*> observers_;
 };

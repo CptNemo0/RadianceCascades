@@ -17,7 +17,7 @@ int main() {
     rc::App& app = rc::App::Instance();
     app.Start();
     while (app.ShouldRun()) {
-      app.ProcessInput();
+      app.StartFrame();
       app.scene_renderer()->Render();
       app.ui()->Render();
       app.EndFrame();

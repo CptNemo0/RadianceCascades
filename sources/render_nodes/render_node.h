@@ -2,8 +2,11 @@
 #define RC_RENDER_NODE_H_
 
 #include <initializer_list>
+#include <string_view>
 #include <vector>
 
+#include "measurement_aggregator.h"
+#include "measurement_manager.h"
 #include "shader_manager.h"
 
 namespace rc {
@@ -12,9 +15,8 @@ namespace rc {
 // This design is based on rather prevalent idea of shader graph.
 // All classes inheriting after RenderNode are supposed to interface easily with
 // each other by passing one's output to other's input.
-class RenderNode {
+class RenderNode : public MeasurementAggregator {
   public:
-    RenderNode() = default;
     virtual ~RenderNode() = default;
 
     // Performs rendering logic of the node.
@@ -31,7 +33,8 @@ class RenderNode {
   protected:
     using ShaderType = ShaderManager::ShaderType;
 
-    RenderNode(std::initializer_list<RenderNode*> inputs) : inputs_(inputs) {};
+    RenderNode(std::string_view name, std::initializer_list<RenderNode*> inputs)
+      : MeasurementAggregator(name), inputs_(inputs) {};
 
     // RenderTargets of those RenderNodes are going to be treated as input
     // textures for the node.

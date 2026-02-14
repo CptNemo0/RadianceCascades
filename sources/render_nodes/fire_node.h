@@ -4,6 +4,7 @@
 #include "glm/fwd.hpp"
 
 #include <memory>
+#include <string_view>
 
 #include "flame_generator.h"
 #include "render_nodes/render_node.h"
@@ -13,7 +14,8 @@ namespace rc {
 
 class FireNode : public RenderNode {
   public:
-    FireNode(FlameGenerator& flame_generator, RenderNode* input);
+    FireNode(std::string_view name, FlameGenerator& flame_generator,
+             RenderNode* input);
 
     virtual void Forward() override;
 

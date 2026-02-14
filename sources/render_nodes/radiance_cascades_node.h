@@ -8,6 +8,7 @@
 #include <array>
 #include <initializer_list>
 #include <memory>
+#include <string_view>
 
 namespace rc {
 
@@ -26,7 +27,7 @@ class RadianceCascadesNode : public RenderNode {
         bool dirty = true;
     };
 
-    RadianceCascadesNode(Parameters& parameters,
+    RadianceCascadesNode(std::string_view name, Parameters& parameters,
                          std::initializer_list<RenderNode*> inputs);
 
     virtual void Forward() override;

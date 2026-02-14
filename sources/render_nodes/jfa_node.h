@@ -5,6 +5,7 @@
 
 #include <array>
 #include <memory>
+#include <string_view>
 
 #include "aliasing.h"
 #include "render_target.h"
@@ -17,7 +18,7 @@ namespace rc {
 // substituted with uv value.
 class JfaNode : public RenderNode {
   public:
-    explicit JfaNode(RenderNode* initializer_node);
+    explicit JfaNode(std::string_view name, RenderNode* initializer_node);
 
     virtual void Forward() override;
 

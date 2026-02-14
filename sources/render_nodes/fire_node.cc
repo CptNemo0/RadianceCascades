@@ -1,24 +1,31 @@
 #include "render_nodes/fire_node.h"
-#include "constants.h"
-#include "flame_generator.h"
+
 #include "glad/include/glad/glad.h"
 #include "glm/ext/vector_float2.hpp"
+
+#include <memory>
+#include <string_view>
+
+#include "constants.h"
+#include "flame_generator.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
-#include <memory>
+#include "timed_scope.h"
 
 namespace rc {
 
-FireNode::FireNode(FlameGenerator& flame_generator, RenderNode* input)
-  : RenderNode({input}), flame_generator_(flame_generator),
+FireNode::FireNode(std::string_view name, FlameGenerator& flame_generator,
+                   RenderNode* input)
+  : RenderNode(name, {input}), flame_generator_(flame_generator),
     output_texture_(
       std::make_unique<RenderTarget>(gScreenHeight, gScreenHeight)) {
 }
 
 void FireNode::Forward() {
+  TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   flame_generator_.RenderFlames();
   const Shader* add_shader =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);

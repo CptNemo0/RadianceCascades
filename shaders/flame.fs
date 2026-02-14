@@ -39,7 +39,6 @@ void main() {
     float x_intensity = min(x_intensity_top, x_intensity_bottom);
     float distance_intensity = (1.0 - dot(diff, diff) * 2.5);
     float noise_intensity = texture(u_noise_texture, remapped_uvs + vec2(0.0, -time * speed)).r;
-
     float intensity = x_intensity * 0.6 * 2.5;
     intensity *= y_intensity * 0.6 * 2.5;
     intensity *= distance_intensity * 0.6 * 2.5;

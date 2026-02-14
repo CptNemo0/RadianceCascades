@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "aliasing.h"
@@ -13,11 +14,12 @@
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
+#include "timed_scope.h"
 
 namespace rc {
 
-JfaNode::JfaNode(RenderNode* initializer_node)
-  : RenderNode({initializer_node}),
+JfaNode::JfaNode(std::string_view name, RenderNode* initializer_node)
+  : RenderNode(name, {initializer_node}),
     render_target_1(
       std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
     render_target_2(
@@ -33,6 +35,7 @@ JfaNode::JfaNode(RenderNode* initializer_node)
 }
 
 void JfaNode::Forward() {
+  TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   Initialize();
   const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
   jfa_swaps = 0;

@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <memory>
 #include <numbers>
+#include <string_view>
 
 #include "aliasing.h"
 #include "render_nodes/render_node.h"
@@ -29,7 +30,7 @@ class GlobalIlluminationNode : public RenderNode {
           static_cast<float>(std::numbers::pi) * 2.0f * one_over_ray_count;
     };
 
-    GlobalIlluminationNode(Parameters& params,
+    GlobalIlluminationNode(std::string_view name, Parameters& params,
                            std::initializer_list<RenderNode*> inputs);
 
     virtual void Forward() override;
