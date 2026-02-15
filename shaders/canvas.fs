@@ -15,24 +15,14 @@ uniform bool eraser;
 
 void main()
 {
-    vec2 coords = vec2(gl_FragCoord.x, gl_FragCoord.y);
-    vec2 diff = position - coords;
+    vec2 diff = position - uv;
     float dist = dot(diff, diff);
-
-    if (dist < (brush_radius * brush_radius + 1)) {
-        if (eraser) {
-            color_ = vec4(0.0, 0.0, 0.0, 0.0);
-        } else {
-            color_ = vec4(brush_color, 1.0);
-        }
-        return;
-    }
-
     vec4 color = texture(drawing_texture, uv);
-    if (color.a > 0.0) {
-        color_ = color;
-        return;
-    }
 
-    color_ = vec4(0.0, 0.0, 0.0, 0.0);
+    if (dist < brush_radius) {
+        color_ = vec4(brush_color, !eraser);
+        return;
+    } else {
+        color_ = color;
+    }
 }

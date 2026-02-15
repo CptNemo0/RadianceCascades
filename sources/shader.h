@@ -11,9 +11,13 @@
 #include <fstream>
 #include <iostream>
 #include <print>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
+
+#include "aliasing.h"
 
 namespace rc {
 
@@ -22,6 +26,30 @@ class Shader {
   public:
     // The Program ID
     unsigned int id_;
+    std::unordered_map<std::string, i32> locations_;
+
+    void ParseForUniforms(const std::string& code) {
+      // Regex breakdown:
+      // \buniform  : Matches the word "uniform" at a word boundary
+      // \s+        : Matches one or more whitespace characters
+      // [a-zA-Z_][\w]* : Matches the type (e.g., mat4, vec3, sampler2D)
+      // \s+        : Matches one or more whitespace characters
+      // ([a-zA-Z_][\w]*) : Captures the variable name (Group 1)
+      std::regex uniformRegex(
+        R"(\buniform\s+[a-zA-Z_][\w]*\s+([a-zA-Z_][\w]*))");
+
+      auto words_begin =
+        std::sregex_iterator(code.begin(), code.end(), uniformRegex);
+      auto words_end = std::sregex_iterator();
+
+      for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        std::smatch match = *i;
+        std::string name = match[1].str();
+
+        // Insert into the map with 0 as the initial value
+        locations_[name] = 0;
+      }
+    }
 
     // Constructor reads and builds the shader
     Shader(const std::filesystem::path& vertexPath,
@@ -38,6 +66,9 @@ class Shader {
                   << std::endl;
         return;
       }
+
+      ParseForUniforms(vertexCode);
+      ParseForUniforms(fragmentCode);
 
       const char* vShaderCode = vertexCode.c_str();
       const char* fShaderCode = fragmentCode.c_str();
@@ -68,6 +99,10 @@ class Shader {
       // longer necessary
       glDeleteShader(vertex);
       glDeleteShader(fragment);
+
+      for (auto& [name, value] : locations_) {
+        value = glGetUniformLocation(id_, name.c_str());
+      }
     }
 
     // Activate the shader
@@ -77,26 +112,23 @@ class Shader {
 
     // Utility uniform functions
     void setBool(const std::string& name, bool value) const {
-      glUniform1i(glGetUniformLocation(id_, name.c_str()),
-                  static_cast<int>(value));
+      glUniform1i(locations_.at(name), static_cast<int>(value));
     }
 
     void setInt(const std::string& name, int value) const {
-      glUniform1i(glGetUniformLocation(id_, name.c_str()), value);
+      glUniform1i(locations_.at(name), value);
     }
 
     void setFloat(const std::string& name, float value) const {
-      glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
+      glUniform1f(locations_.at(name), value);
     }
 
     void setVec2(const std::string& name, const glm::vec2& value) const {
-      glUniform2fv(glGetUniformLocation(id_, name.c_str()), 1,
-                   glm::value_ptr(value));
+      glUniform2f(locations_.at(name), value.x, value.y);
     }
 
     void setVec3(const std::string& name, const glm::vec3& value) const {
-      glUniform3fv(glGetUniformLocation(id_, name.c_str()), 1,
-                   glm::value_ptr(value));
+      glUniform3fv(locations_.at(name), 1, glm::value_ptr(value));
     }
 
   private:

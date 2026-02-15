@@ -68,7 +68,6 @@ void GlobalIlluminationNode::UpdateUniforms() {
   const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
   shader->setInt("step_count", parameters_.step_count);
   shader->setFloat("proximity_epsilon", parameters_.proximity_epsilon);
-  shader->setInt("ray_count", parameters_.ray_count);
   shader->setFloat("one_over_ray_count", parameters_.one_over_ray_count);
   shader->setFloat("angle_step", parameters_.angle_step);
   shader->setFloat("noise", parameters_.noise_amount);

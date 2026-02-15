@@ -12,6 +12,7 @@
 #include "aliasing.h"
 #include "constants.h"
 #include "renderer.h"
+#include "shader_manager.h"
 
 namespace {
 
@@ -73,6 +74,9 @@ void Ui::Render() {
   if (ImGui::ColorEdit3("Brush color",
                         glm::value_ptr(renderer_->canvas_->brush_color_))) {
     renderer_->canvas_->first_ = true;
+    ShaderManager::Instance()
+      .Use(ShaderManager::ShaderType::kCanvas)
+      ->setVec3("brush_color", renderer_->canvas_->brush_color_);
   }
 
   if (flame_generator_->register_) {
@@ -82,6 +86,11 @@ void Ui::Render() {
     if (ImGui::SliderFloat("Brush size", &renderer_->canvas_->brush_radius_,
                            0.0f, rc::gMaxBrushRadius)) {
       renderer_->canvas_->first_ = true;
+      ShaderManager::Instance()
+        .Use(ShaderManager::ShaderType::kCanvas)
+        ->setFloat("brush_radius", renderer_->canvas_->brush_radius_ *
+                                     renderer_->canvas_->brush_radius_ *
+                                     gBrushScale * gBrushScale);
     }
   }
 
@@ -106,6 +115,9 @@ void Ui::Render() {
   if (ImGui::Checkbox("Eraser", &renderer_->canvas()->eraser_)) {
     renderer_->canvas()->first_ = true;
     flame_generator_->eraser_ = renderer_->canvas()->eraser_;
+    ShaderManager::Instance()
+      .Use(ShaderManager::ShaderType::kCanvas)
+      ->setBool("eraser", renderer_->canvas_->eraser_);
   }
 
   int current_mode_index = static_cast<int>(renderer_->mode_);

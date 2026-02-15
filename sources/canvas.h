@@ -78,6 +78,8 @@ class Canvas : public App::Observer {
                                                      &render_target_canvas_2};
 
     ScopedObservation<Canvas, App> app_observation_;
+
+    i32 cached_position_location;
 };
 
 } // namespace rc

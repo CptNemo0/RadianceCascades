@@ -11,7 +11,6 @@ namespace rc {
 class TimedScope {
   public:
     using clock = std::chrono::high_resolution_clock;
-    using time_point = std::chrono::high_resolution_clock::time_point;
 
     explicit TimedScope(MeasurementAggregator* aggregator)
       : aggregator_(aggregator), start_(clock::now()) {
@@ -37,7 +36,7 @@ class TimedScope {
 
   private:
     MeasurementAggregator* aggregator_;
-    time_point start_;
+    std::chrono::high_resolution_clock::time_point start_;
 };
 
 } // namespace rc

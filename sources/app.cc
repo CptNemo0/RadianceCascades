@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 
@@ -12,6 +13,7 @@
 #include "measurement_manager.h"
 #include "renderer.h"
 #include "shader_manager.h"
+#include "timed_scope.h"
 #include "ui.h"
 
 namespace rc {
@@ -47,7 +49,7 @@ void App::Start() {
     throw std::runtime_error("Failed to initialize GLAD");
   }
 
-  glfwSwapInterval(1);
+  glfwSwapInterval(0);
 
   ShaderManager::Instance().LoadShaders();
   renderer_ = std::make_unique<Renderer>();
@@ -82,18 +84,16 @@ bool App::RMBPressed() {
 }
 
 void App::EndFrame() {
+  TimedScope scope{NULL};
   glfwSwapBuffers(window_);
   glfwPollEvents();
-
   if (!is_measuring_) {
     return;
   }
-
   if (frames_measured_ == gFramesToMeasure - 1) {
     StopMeasuring();
     return;
   }
-
   frames_measured_++;
 }
 

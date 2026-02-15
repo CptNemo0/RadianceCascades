@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <print>
 
 #include "app.h"
 #include "glad/include/glad/glad.h"
@@ -15,6 +16,7 @@
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
+#include "timed_scope.h"
 
 namespace rc {
 
@@ -23,6 +25,18 @@ Canvas::Canvas(u64 height, u64 width, u64 brush_radius, glm::vec3 brush_color)
     brush_radius_(std::clamp(brush_radius, 0uz, gMaxBrushRadius)),
     brush_color_(brush_color), app_observation_(this) {
   app_observation_.Observe(&(App::Instance()));
+
+  const rc::Shader* canvas_shader =
+    ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
+  canvas_shader->setFloat("width", static_cast<float>(width_));
+  canvas_shader->setFloat("height", static_cast<float>(height_));
+  canvas_shader->setFloat("brush_radius", brush_radius_ * brush_radius_ *
+                                            gBrushScale * gBrushScale);
+  canvas_shader->setVec3("brush_color", brush_color_);
+  canvas_shader->setBool("eraser", eraser_);
+
+  cached_position_location =
+    glGetUniformLocation(canvas_shader->id_, "position");
 }
 
 void Canvas::GetMousePositionOnRMB(const glm::vec2& position) {
@@ -75,23 +89,17 @@ void Canvas::Draw() {
   if (first_) {
     return;
   }
-  const rc::Shader* canvas_shader =
-    ShaderManager::Instance().GetShader(ShaderManager::ShaderType::kCanvas);
-  canvas_shader->use();
+
+  auto sp = selected_position_;
+  sp *= glm::vec2(gOneOverWidth, gOneOverHeight);
+
+  ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
   render_targets_[0]->Bind();
   render_targets_[0]->Clear();
   render_targets_[1]->BindTexture(GL_TEXTURE0);
-  canvas_shader->setFloat("width", static_cast<float>(width_));
-  canvas_shader->setFloat("height_", static_cast<float>(height_));
-  canvas_shader->setFloat("brush_radius", brush_radius_);
-  canvas_shader->setVec2("position", selected_position_);
-  canvas_shader->setVec3("brush_color", brush_color_);
-  canvas_shader->setBool("eraser", eraser_);
+  glUniform2f(cached_position_location, sp.x, sp.y);
   Surface::Instnace().Draw();
-
   std::swap(render_targets_[0], render_targets_[1]);
-
-  return;
 }
 
 } // namespace rc

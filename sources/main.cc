@@ -10,6 +10,7 @@
 
 #include "app.h"
 #include "renderer.h"
+#include "timed_scope.h"
 #include "ui.h"
 
 int main() {
@@ -17,6 +18,7 @@ int main() {
     rc::App& app = rc::App::Instance();
     app.Start();
     while (app.ShouldRun()) {
+      rc::TimedScope scope{nullptr};
       app.StartFrame();
       app.scene_renderer()->Render();
       app.ui()->Render();
