@@ -2,6 +2,7 @@
 #define RC_FLAME_GENERATOR_H_
 
 #include "aliasing.h"
+#include "glad/include/glad/glad.h"
 #include "glm/glm.hpp"
 
 #include <array>
@@ -54,9 +55,12 @@ class FlameGenerator : public App::Observer {
     bool turned_on_{false};
     bool register_{false};
 
-    RenderTarget render_target_fire_{rc::gScreenWidth, rc::gScreenHeight};
-    RenderTarget render_target_combined_1_{rc::gScreenWidth, rc::gScreenHeight};
-    RenderTarget render_target_combined_2_{rc::gScreenWidth, rc::gScreenHeight};
+    RenderTarget render_target_fire_{rc::gScreenWidth, rc::gScreenHeight,
+                                     GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+    RenderTarget render_target_combined_1_{rc::gScreenWidth, rc::gScreenHeight,
+                                           GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+    RenderTarget render_target_combined_2_{rc::gScreenWidth, rc::gScreenHeight,
+                                           GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
     std::array<RenderTarget*, 2> combined_rts_;
 
     std::unique_ptr<Texture> noise_texture_;

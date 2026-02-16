@@ -8,7 +8,9 @@
 
 namespace rc {
 
-RenderTarget::RenderTarget(u64 width, u64 height) : texture_(width, height) {
+RenderTarget::RenderTarget(u64 width, u64 height, i32 bits, i32 format,
+                           i32 type)
+  : texture_(width, height, nullptr, bits, format, type) {
   glGenFramebuffers(1, &frame_buffer_handle_);
   glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_handle_);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,

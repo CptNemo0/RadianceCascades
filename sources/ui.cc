@@ -141,7 +141,7 @@ void Ui::Render() {
     if (ImGui::SliderFloat(
           "Proximity threshold",
           &renderer_->global_illumination_params_.proximity_epsilon, 0.00001f,
-          0.05f, "%.5f")) {
+          0.005f, "%.5f")) {
       renderer_->global_illumination_params_.dirty = true;
     }
 
@@ -175,8 +175,8 @@ void Ui::Render() {
 
     if (ImGui::SliderFloat("Proximity threshold",
                            &renderer_->cascades_params_.proximity_epsilon,
-                           0.00001f, 0.05f, "%.5f")) {
-      renderer_->global_illumination_params_.dirty = true;
+                           0.00001f, 0.005f, "%.5f")) {
+      renderer_->cascades_params_.dirty = true;
     }
 
     if (ImGui::SliderInt("Base rays count",

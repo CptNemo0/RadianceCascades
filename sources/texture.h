@@ -9,8 +9,8 @@ namespace rc {
 
 class Texture {
   public:
-    Texture(u64 width, u64 height, i32 bits = GL_RGBA32F, i32 format = GL_RGBA,
-            i32 type = GL_FLOAT, void* data = nullptr);
+    Texture(u64 width, u64 height, void* data = nullptr, i32 bits = GL_RGBA32F,
+            i32 format = GL_RGBA, i32 type = GL_FLOAT);
     Texture(const Texture&) = delete;
     void operator=(const Texture&) = delete;
     Texture(Texture&& other) = delete;

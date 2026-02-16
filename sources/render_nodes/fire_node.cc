@@ -20,8 +20,8 @@ namespace rc {
 FireNode::FireNode(std::string_view name, FlameGenerator& flame_generator,
                    RenderNode* input)
   : RenderNode(name, {input}), flame_generator_(flame_generator),
-    output_texture_(
-      std::make_unique<RenderTarget>(gScreenHeight, gScreenHeight)) {
+    output_texture_(std::make_unique<RenderTarget>(
+      gScreenHeight, gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)) {
 }
 
 void FireNode::Forward() {

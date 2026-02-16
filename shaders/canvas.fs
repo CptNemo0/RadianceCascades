@@ -19,7 +19,7 @@ void main()
     float dist = dot(diff, diff);
     vec4 color = texture(drawing_texture, uv);
 
-    if (dist < brush_radius) {
+    if (dist < brush_radius * 0.9) {
         color_ = vec4(brush_color, !eraser);
         return;
     } else {

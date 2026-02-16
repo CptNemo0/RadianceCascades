@@ -1,6 +1,5 @@
 #version 430
-layout(location = 0) out vec4 color_;
-precision highp float;
+layout(location = 0) out vec2 color_;
 
 in vec2 uv;
 
@@ -24,7 +23,7 @@ void main()
 {
     ivec2 start_pixel_position = ivec2(gl_FragCoord.x, gl_FragCoord.y);
     ivec2 texture_size = textureSize(uv_colorspace_texture, 0);
-    vec2 current_seed = texelFetch(uv_colorspace_texture, start_pixel_position, 0).xy;
+    vec2 current_seed = texelFetch(uv_colorspace_texture, start_pixel_position, 0).rg;
 
     float nearest_distance = 99999.9;
     vec2 nearest_seed = current_seed;
@@ -38,7 +37,14 @@ void main()
         ivec2 current_position = start_pixel_position + step_size * directions[i];
         current_position = clamp(current_position, ivec2(0.0), texture_size - 1);
 
-        current_seed = texelFetch(uv_colorspace_texture, current_position, 0).xy;
+        if (current_position.x < 0 ||
+                current_position.y < 0 ||
+                current_position.x > texture_size.x - 1 ||
+                current_position.y > texture_size.y - 1) {
+            continue;
+        }
+
+        current_seed = texelFetch(uv_colorspace_texture, current_position, 0).rg;
 
         if (current_seed.x > 0.0 || current_seed.y > 0.0) {
             vec2 diff = current_seed - uv;
@@ -51,5 +57,5 @@ void main()
         }
     }
 
-    color_ = vec4(nearest_seed, 0.0, 1.0);
+    color_ = nearest_seed;
 }

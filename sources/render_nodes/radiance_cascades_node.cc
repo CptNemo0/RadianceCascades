@@ -67,7 +67,7 @@ void RadianceCascadesNode::UpdateUniforms() {
   shader_rc->setFloat("cascade_count", parameters_.cascade_count);
   shader_rc->setFloat("overlap", parameters_.overlap);
   shader_rc->setInt("step_count", parameters_.step_count);
-  shader_rc->setInt("proximity_epsilon", parameters_.proximity_epsilon);
+  shader_rc->setFloat("proximity_epsilon", parameters_.proximity_epsilon);
   parameters_.dirty = false;
 }
 

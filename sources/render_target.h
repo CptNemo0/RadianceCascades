@@ -10,7 +10,8 @@ namespace rc {
 
 class RenderTarget {
   public:
-    RenderTarget(u64 width, u64 height);
+    RenderTarget(u64 width, u64 height, i32 bits = GL_RGBA32F,
+                 i32 format = GL_RGBA, i32 type = GL_FLOAT);
     RenderTarget(const RenderTarget&) = delete;
     void operator=(const RenderTarget&) = delete;
     RenderTarget(RenderTarget&&) = delete;

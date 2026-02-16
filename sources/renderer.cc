@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+#include "glad/include/glad/glad.h"
+
 #include <initializer_list>
 #include <memory>
 #include <utility>
@@ -9,8 +11,6 @@
 #include "canvas.h"
 #include "constants.h"
 #include "flame_generator.h"
-#include "glad/include/glad/glad.h"
-#include "imgui.h"
 #include "render_nodes/canvas_node.h"
 #include "render_nodes/copy_node.h"
 #include "render_nodes/fire_node.h"
@@ -39,14 +39,16 @@ void Renderer::Initialize() {
   std::unique_ptr<rc::CopyNode> uv_colorspace_node =
     std::make_unique<rc::CopyNode>(
       "UVColorspaceNode", rc::ShaderManager::ShaderType::kUvColorspace,
-      std::initializer_list<rc::RenderNode*>{flame_node.get()});
+      std::initializer_list<rc::RenderNode*>{flame_node.get()}, GL_RG32F, GL_RG,
+      GL_FLOAT);
 
   std::unique_ptr<rc::JfaNode> jfa_node =
     std::make_unique<rc::JfaNode>("JFANode", uv_colorspace_node.get());
 
   std::unique_ptr<rc::CopyNode> sdf_node = std::make_unique<rc::CopyNode>(
     "SDFNode", rc::ShaderManager::ShaderType::kSdf,
-    std::initializer_list<rc::RenderNode*>{jfa_node.get()});
+    std::initializer_list<rc::RenderNode*>{jfa_node.get()}, GL_R16F, GL_RED,
+    GL_FLOAT);
 
   std::unique_ptr<rc::GlobalIlluminationNode> gi_node =
     std::make_unique<rc::GlobalIlluminationNode>(

@@ -4,6 +4,7 @@
 #include <array>
 #include <chrono>
 
+#include "glad/include/glad/glad.h"
 #include "glm/fwd.hpp"
 #include "glm/glm.hpp"
 
@@ -70,10 +71,10 @@ class Canvas : public App::Observer {
     glm::vec2 previous_position_;
     glm::vec2 selected_position_;
 
-    rc::RenderTarget render_target_canvas_1{rc::gScreenWidth,
-                                            rc::gScreenHeight};
-    rc::RenderTarget render_target_canvas_2{rc::gScreenWidth,
-                                            rc::gScreenHeight};
+    rc::RenderTarget render_target_canvas_1{
+      rc::gScreenWidth, rc::gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+    rc::RenderTarget render_target_canvas_2{
+      rc::gScreenWidth, rc::gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
     std::array<rc::RenderTarget*, 2> render_targets_{&render_target_canvas_1,
                                                      &render_target_canvas_2};
 

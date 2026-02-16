@@ -7,6 +7,7 @@
 #include <string_view>
 
 #include "aliasing.h"
+#include "constants.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 #include "texture.h"
@@ -23,7 +24,7 @@ class GlobalIlluminationNode : public RenderNode {
         bool dirty{true};
         float noise_amount = 0.5;
         i32 step_count = 128;
-        f32 proximity_epsilon = 0.00001f;
+        f32 proximity_epsilon = 0.5f / gScreenWidth;
         i32 ray_count = 32;
         f32 one_over_ray_count = 1.0f / ray_count;
         f32 angle_step =

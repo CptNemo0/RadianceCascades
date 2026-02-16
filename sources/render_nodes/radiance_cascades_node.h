@@ -24,7 +24,7 @@ class RadianceCascadesNode : public RenderNode {
         i32 base_ray_count = 4;
         i32 cascade_count = 6;
         f32 overlap = 0.17f;
-        f32 proximity_epsilon = 0.5f * gScreenWidth;
+        f32 proximity_epsilon = 0.5f / gScreenWidth;
         bool dirty = true;
     };
 

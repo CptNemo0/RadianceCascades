@@ -1,10 +1,13 @@
 #ifndef RC_RENDER_NODES_COPY_NODE_H_
 #define RC_RENDER_NODES_COPY_NODE_H_
 
+#include "glad/include/glad/glad.h"
+
 #include <initializer_list>
 #include <memory>
 #include <string_view>
 
+#include "aliasing.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 
@@ -18,10 +21,15 @@ namespace rc {
 class CopyNode : public RenderNode {
   public:
     CopyNode(std::string_view name, std::initializer_list<RenderNode*> inputs,
-             bool to_screen = false);
+             RenderToScreen to_screen = false);
 
     CopyNode(std::string_view name, ShaderType copy_shader,
-             std::initializer_list<RenderNode*> inputs, bool to_screen = false);
+             std::initializer_list<RenderNode*> inputs,
+             RenderToScreen to_screen = false);
+
+    CopyNode(std::string_view name, ShaderType copy_shader,
+             std::initializer_list<RenderNode*> inputs, i32 bits, i32 format,
+             i32 type);
 
     virtual void Forward() override;
 

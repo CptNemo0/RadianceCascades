@@ -18,6 +18,8 @@ using i64 = std::int64_t;
 using f32 = float;
 using f64 = double;
 
+using RenderToScreen = bool;
+
 } // namespace rc
 
 #endif // !RC_ALIASING_H_

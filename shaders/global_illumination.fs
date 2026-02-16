@@ -21,7 +21,7 @@ uniform float time;
 const float whole = 3.141592 * 2.0;
 
 bool out_of_bounds(vec2 sample_uv) {
-    return sample_uv.x < 0.0 || sample_uv.x > 1.0 || sample_uv.y < 0.0 || sample_uv.y > 1.0;
+    return sample_uv.x < 0.0 || sample_uv.y < 0.0 || sample_uv.x > 1.0 || sample_uv.y > 1.0;
 }
 
 void main()
@@ -38,9 +38,9 @@ void main()
     for (float ray_angle = 0; ray_angle < whole; ray_angle += angle_step) {
         vec2 direction = normalize(mix(vec2(cos(ray_angle), -sin(ray_angle)), angle_jitter, noise));
         vec2 sample_uv = uv;
+        float current_distance = texture(sdf_texture, sample_uv).r;
 
         for (int i = 1; i < step_count; i++) {
-            float current_distance = texture(sdf_texture, sample_uv).r;
             sample_uv += current_distance * direction;
 
             if (out_of_bounds(sample_uv)) {
@@ -51,6 +51,7 @@ void main()
                 result_color += texture(color_texture, sample_uv);
                 break;
             }
+            current_distance = texture(sdf_texture, sample_uv).r;
         }
     }
 

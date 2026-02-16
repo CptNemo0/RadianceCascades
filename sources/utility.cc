@@ -1,6 +1,9 @@
 #include "utility.h"
 
+#include "glad/include/glad/glad.h"
+#include "glm/ext/quaternion_geometric.hpp"
 #include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
 #include "glm/glm.hpp"
 
 #include <algorithm>
@@ -83,16 +86,20 @@ float ComputeFBM(float x, float y, int octaves, float lacunarity,
 namespace rc {
 
 std::unique_ptr<Texture> GetNoiseTexture(u64 width, u64 height) {
-  std::vector<glm::vec4> data(width * height,
-                              glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+  std::vector<glm::vec2> data(width * height, glm::vec2(0.0f, 0.0f));
   std::ranges::generate(data, RandomVec4);
   return std::make_unique<Texture>(width, height,
-                                   reinterpret_cast<void*>(data.data()));
+                                   reinterpret_cast<void*>(data.data()),
+                                   GL_RG16F, GL_RG, GL_FLOAT);
 }
 
 glm::vec4 RandomVec4() {
   return glm::vec4{distribution(gen), distribution(gen), distribution(gen),
                    1.0f};
+}
+
+glm::vec2 RandomVec2() {
+  return glm::normalize(glm::vec2(distribution(gen), distribution(gen)));
 }
 
 std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width, u64 height,
@@ -122,7 +129,7 @@ std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width, u64 height,
 
 std::unique_ptr<Texture> GetFBMTexture(u64 width, u64 height, int octaves,
                                        float scale) {
-  std::vector<glm::vec4> data(width * height);
+  std::vector<float> data(width * height);
 
   const float lacunarity = 2.0f;
   const float persistence = 0.5f;
@@ -135,13 +142,13 @@ std::unique_ptr<Texture> GetFBMTexture(u64 width, u64 height, int octaves,
       float color_value = (noise_value + 1.0f) * 0.5f;
       color_value = std::clamp(color_value, 0.0f, 1.0f);
 
-      data[y * width + x] =
-        glm::vec4(color_value, color_value, color_value, 1.0f);
+      data[y * width + x] = color_value;
     }
   }
 
   return std::make_unique<Texture>(width, height,
-                                   reinterpret_cast<void*>(data.data()));
+                                   reinterpret_cast<void*>(data.data()),
+                                   GL_R16F, GL_RED, GL_FLOAT);
 }
 
 } // namespace rc

@@ -9,8 +9,8 @@
 
 namespace rc {
 
-Texture::Texture(u64 width, u64 height, i32 bits, i32 format, i32 type,
-                 void* data)
+Texture::Texture(u64 width, u64 height, void* data, i32 bits, i32 format,
+                 i32 type)
   : width_(width), height_(height) {
   glGenTextures(1, &id_);
   glBindTexture(GL_TEXTURE_2D, id_);

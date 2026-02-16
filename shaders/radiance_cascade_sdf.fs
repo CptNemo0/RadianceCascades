@@ -26,11 +26,12 @@ uniform sampler2D upper_cascade_texture;
 const float srgb = 2.1;
 const float whole = 3.141592 * 2.0;
 
-bool out_of_bounds(vec2 uv) {
-    return uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0;
+bool out_of_bounds(vec2 sample_uv) {
+    return sample_uv.x < 0.0 || sample_uv.y < 0.0 || sample_uv.x > 1.0 || sample_uv.y > 1.0;
 }
 
 void main() {
+    vec4 this_pixel_color = texture(color_texture, uv);
     vec2 coord = floor(uv * resolution);
 
     float spacing_base = sqrt(base_ray_count);
@@ -41,9 +42,11 @@ void main() {
     vec2 probe_center = (probe_coord + 0.5) * spacing;
     vec2 probe_uv = probe_center / resolution;
 
-    float interval_start = base_level ? 0.0 : (pow(base_ray_count, cascade_index)) / resolution.x; // !
-    float interval_length = pow(base_ray_count, cascade_index + 1) / resolution.x; // !
-    interval_length *= (1 + overlap);
+    float interval_start = base_level ? 0.0 : (pow(base_ray_count, (cascade_index - 1)) / resolution.x); // !
+    float interval_end = ((
+        (1.0 + 3.0 * overlap) * pow(base_ray_count, cascade_index) - pow(cascade_index, 2.0)
+        ) / resolution.x); // !
+    float interval_length = interval_end - interval_start;
 
     // Multiply by base_ray_count to further subdivide.
     // This trick spreads out the underlying indices.
@@ -61,6 +64,7 @@ void main() {
         vec2 direction = vec2(cos(angle), -sin(angle));
 
         vec2 sample_uv = probe_uv + interval_start * direction;
+        float current_distance = texture(sdf_texture, sample_uv).r;
 
         if (out_of_bounds(sample_uv)) {
             continue;
@@ -69,39 +73,41 @@ void main() {
         vec4 radiance_from_ray = vec4(0.0);
         float traveled = 0.0;
 
-        for (int step = 1; step < step_count; step++) {
-            float current_distance = texture(sdf_texture, sample_uv).r;
-            traveled += current_distance;
+        for (int step = 0; step < step_count; step++) {
             sample_uv += direction * current_distance;
 
-            if (out_of_bounds(sample_uv)) break;
-
-            if (traveled >= interval_length) {
+            if (out_of_bounds(sample_uv)) {
                 break;
             }
 
-            if (current_distance <= proximity_epsilon) {
+            traveled += current_distance;
+            if (traveled > interval_length) {
+                break;
+            }
+
+            if (current_distance < proximity_epsilon) {
                 radiance_from_ray += texture(color_texture, sample_uv);
                 break;
             }
+            current_distance = texture(sdf_texture, sample_uv).r;
         }
 
         if (cascade_index + 1 != cascade_count && radiance_from_ray.a == 0.0) {
-            float upperSpacing = pow(spacing_base, cascade_index + 1.0);
-            vec2 upperSize = floor(resolution / upperSpacing);
-            vec2 upperPosition = vec2(
-                    mod(index, upperSpacing), floor(index / upperSpacing)
-                ) * upperSize;
+            float upper_spacing = pow(spacing_base, cascade_index + 1.0);
+            vec2 upper_size = floor(resolution / upper_spacing);
+            vec2 upper_position = vec2(
+                    mod(index, upper_spacing), floor(index / upper_spacing)
+                ) * upper_size;
 
             vec2 offset = (probe_coord + 0.5) / spacing_base;
-            vec2 clamped = clamp(offset, vec2(0.5), upperSize - 0.5);
+            vec2 clamped = clamp(offset, vec2(0.5), upper_size - 0.5);
 
-            vec4 upperSample = texture(
+            vec4 upper_sample = texture(
                     upper_cascade_texture,
-                    (upperPosition + clamped) / resolution
+                    (upper_position + clamped) / resolution
                 );
 
-            radiance_from_ray += vec4(upperSample.rgb, upperSample.a);
+            radiance_from_ray += vec4(upper_sample.rgb, upper_sample.a);
         }
 
         radiance += radiance_from_ray;
