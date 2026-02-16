@@ -164,6 +164,10 @@ void Ui::Render() {
     break;
 
   case Renderer::Mode::kRc:
+    if (ImGui::Checkbox("Use SDF", &renderer_->cascades_params_.use_sdf)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
     if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
                          renderer_->cascades_pipeline_.size() - 1)) {
     }
