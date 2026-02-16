@@ -23,9 +23,11 @@ GlobalIlluminationNode::GlobalIlluminationNode(
   std::initializer_list<RenderNode*> inputs)
   : RenderNode(name, inputs), parameters_(params),
     gi_render_target_(
-      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
-    previous_frame_(
-      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
+      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight,
+                                     GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)),
+    previous_frame_(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                   rc::gScreenHeight, GL_RGBA8,
+                                                   GL_RGBA, GL_UNSIGNED_BYTE)),
     noise_texture_(rc::GetNoiseTexture(rc::gScreenWidth, rc::gScreenHeight)) {
   const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
   // I know, this is not the perfect way to do this. But currently writing

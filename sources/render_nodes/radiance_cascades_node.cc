@@ -22,10 +22,12 @@ RadianceCascadesNode::RadianceCascadesNode(
   std::string_view name, RadianceCascadesNode::Parameters& params,
   std::initializer_list<RenderNode*> inputs)
   : RenderNode(name, inputs), parameters_(params),
-    render_target_1_(
-      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)),
+    render_target_1_(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                    rc::gScreenHeight, GL_RGBA8,
+                                                    GL_RGBA, GL_UNSIGNED_BYTE)),
     render_target_2_(
-      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)) {
+      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight,
+                                     GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)) {
   const rc::Shader* shader_rc =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
   shader_rc->setVec2("resolution",
