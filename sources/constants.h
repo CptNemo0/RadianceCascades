@@ -35,7 +35,7 @@ inline constexpr f32 gMaxFlameSize = 0.6;
 
 inline constexpr u64 gMaxFlameCount = 16;
 
-inline constexpr u64 gFramesToMeasure = 1024;
+inline constexpr u64 gFramesToMeasure = 5 * 1024;
 
 // Full-screen quad vertices:
 // Positions (x, y, z) | Texture Coords (u, v)

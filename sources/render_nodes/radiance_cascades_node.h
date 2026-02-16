@@ -1,6 +1,7 @@
 #ifndef RC_RENDER_NODES_RADIANCE_CASCADES_NODE_H_
 #define RC_RENDER_NODES_RADIANCE_CASCADES_NODE_H_
 
+#include "constants.h"
 #include "render_nodes/render_node.h"
 
 #include "aliasing.h"
@@ -23,7 +24,7 @@ class RadianceCascadesNode : public RenderNode {
         i32 base_ray_count = 4;
         i32 cascade_count = 6;
         f32 overlap = 0.17f;
-        f32 proximity_epsilon = 0.0001f;
+        f32 proximity_epsilon = 0.5f * gScreenWidth;
         bool dirty = true;
     };
 

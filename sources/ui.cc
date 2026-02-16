@@ -169,7 +169,7 @@ void Ui::Render() {
     }
 
     if (ImGui::SliderInt("Step count", &renderer_->cascades_params_.step_count,
-                         1, 64)) {
+                         1, 128)) {
       renderer_->cascades_params_.dirty = true;
     }
 

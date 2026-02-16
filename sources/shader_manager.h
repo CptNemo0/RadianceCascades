@@ -29,10 +29,12 @@ class ShaderManager {
       // Global illumination - standard approach
       kGi = 5,
       // Global illumination - radiance cascades approach
-      kRc = 6,
+      kRc = 7,
+      // Global illumination - radiance cascades approach with SDF
+      kRcSdf = 6,
       // Flame shader - produces a singular flame in the middle of the scene.
-      kFlame = 7,
-      kOverlay = 8,
+      kFlame = 8,
+      kOverlay = 9,
       kTypeNum
     };
 
@@ -63,6 +65,10 @@ class ShaderManager {
 
       if (value == "radiance_cascade") {
         return ShaderType::kRc;
+      }
+
+      if (value == "radiance_cascade_sdf") {
+        return ShaderType::kRcSdf;
       }
 
       if (value == "flame") {

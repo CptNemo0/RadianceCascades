@@ -27,7 +27,7 @@ RadianceCascadesNode::RadianceCascadesNode(
     render_target_2_(
       std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight)) {
   const rc::Shader* shader_rc =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
   shader_rc->setVec2("resolution",
                      glm::vec2(static_cast<float>(rc::gScreenWidth),
                                static_cast<float>(rc::gScreenHeight)));
@@ -41,7 +41,7 @@ RadianceCascadesNode::RadianceCascadesNode(
 void RadianceCascadesNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   const Shader* shader =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
   UpdateUniforms();
   BindInputs();
 
@@ -62,7 +62,7 @@ void RadianceCascadesNode::UpdateUniforms() {
     return;
   }
   const rc::Shader* shader_rc =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
   shader_rc->setFloat("base_ray_count", parameters_.base_ray_count);
   shader_rc->setFloat("cascade_count", parameters_.cascade_count);
   shader_rc->setFloat("overlap", parameters_.overlap);

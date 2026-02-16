@@ -9,12 +9,12 @@
 
 namespace rc {
 
-Texture::Texture(u64 width, u64 height, void* data)
+Texture::Texture(u64 width, u64 height, i32 bits, i32 format, i32 type,
+                 void* data)
   : width_(width), height_(height) {
   glGenTextures(1, &id_);
   glBindTexture(GL_TEXTURE_2D, id_);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA,
-               GL_FLOAT, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, bits, width, height, 0, format, type, data);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

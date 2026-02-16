@@ -112,22 +112,27 @@ class Shader {
 
     // Utility uniform functions
     void setBool(const std::string& name, bool value) const {
+      // std::cout << name << " \n";
       glUniform1i(locations_.at(name), static_cast<int>(value));
     }
 
     void setInt(const std::string& name, int value) const {
+      // std::cout << name << " \n";
       glUniform1i(locations_.at(name), value);
     }
 
     void setFloat(const std::string& name, float value) const {
+      // std::cout << name << " \n";
       glUniform1f(locations_.at(name), value);
     }
 
     void setVec2(const std::string& name, const glm::vec2& value) const {
+      // std::cout << name << " \n";
       glUniform2f(locations_.at(name), value.x, value.y);
     }
 
     void setVec3(const std::string& name, const glm::vec3& value) const {
+      // std::cout << name << " \n";
       glUniform3fv(locations_.at(name), 1, glm::value_ptr(value));
     }
 
