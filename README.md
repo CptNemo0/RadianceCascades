@@ -42,4 +42,4 @@ NodeName Sample1 Sample2 Sample3
 NodeName1 Sample1_1 Sample1_2 Sample1_3
 ```
 
-Each sample is the amount of `microseconds` it took to render specific stage of the pipeline.
+Each sample is the amount of `microseconds` it took to render specific stage of the pipeline. If the node is turned on it will NOT register the samples.

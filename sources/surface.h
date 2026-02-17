@@ -22,6 +22,8 @@ class Surface {
     Surface(Surface&&) = delete;
     void operator=(Surface&&) = delete;
 
+    bool measuring_{false};
+
   private:
     Surface();
     u32 vao_;

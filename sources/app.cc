@@ -13,6 +13,7 @@
 #include "measurement_manager.h"
 #include "renderer.h"
 #include "shader_manager.h"
+#include "surface.h"
 #include "timed_scope.h"
 #include "ui.h"
 
@@ -123,11 +124,13 @@ void App::StartMeasuring() {
   frames_measured_ = 0;
   is_measuring_ = true;
   measurement_manager_->StartMeasuring(gFramesToMeasure);
+  Surface::Instnace().measuring_ = true;
 }
 
 void App::StopMeasuring() {
   measurement_manager_->StopMeasuring();
   is_measuring_ = false;
+  Surface::Instnace().measuring_ = false;
 }
 
 } // namespace rc
