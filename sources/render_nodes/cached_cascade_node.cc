@@ -1,14 +1,15 @@
-#include "render_nodes/radiance_cascades_node.h"
+#include "cached_cascades_node.h"
 
 #include "glad/include/glad/glad.h"
 #include "glm/fwd.hpp"
 
+#include <algorithm>
 #include <initializer_list>
 #include <memory>
 #include <string_view>
-#include <utility>
 
 #include "constants.h"
+#include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 #include "shader.h"
@@ -18,17 +19,12 @@
 
 namespace rc {
 
-RadianceCascadesNode::RadianceCascadesNode(
-  std::string_view name, RadianceCascadesNode::Parameters& params,
+CachedCascadesNode::CachedCascadesNode(
+  std::string_view name, Parameters& parameters,
   std::initializer_list<RenderNode*> inputs)
-  : RenderNode(name, inputs), parameters_(params),
-    render_target_1_(std::make_unique<RenderTarget>(rc::gScreenWidth,
-                                                    rc::gScreenHeight, GL_RGBA8,
-                                                    GL_RGBA, GL_UNSIGNED_BYTE)),
+  : RenderNode(name, inputs), parameters_(parameters),
+    cascade_count_(parameters.cascade_count) {
 
-    render_target_2_(
-      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight,
-                                     GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)) {
   const rc::Shader* shader_rc =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
   shader_rc->setVec2("resolution",
@@ -47,11 +43,14 @@ RadianceCascadesNode::RadianceCascadesNode(
   shader_rc_sdf->setInt("sdf_texture", 1);
   shader_rc_sdf->setInt("upper_cascade_texture", 2);
 
-  render_targets_[0] = render_target_1_.get();
-  render_targets_[1] = render_target_2_.get();
+  render_targets_.resize(cascade_count_);
+  std::ranges::generate(render_targets_, []() {
+    return std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight,
+                                          GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
+  });
 }
 
-void RadianceCascadesNode::Forward() {
+void CachedCascadesNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   const Shader* shader = ShaderManager::Instance().Use(
     parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
@@ -59,19 +58,26 @@ void RadianceCascadesNode::Forward() {
   UpdateUniforms();
   BindInputs();
 
-  // Last frame is second in the rc_render_targets array.
-  for (int i{parameters_.cascade_count - 1}; i > -1; --i) {
+  for (int i{static_cast<int>(cascade_count_) - 1}; i > -1; --i) {
+    if (internal_frame_counter % parameters_.render_frequencies_[i]) {
+      continue;
+    }
+
     shader->setInt("cascade_index", i);
     shader->setBool("base_level", i == 0);
-    render_targets_[0]->Bind();
-    render_targets_[0]->ClearDefault();
-    render_targets_[1]->BindTexture(GL_TEXTURE2);
+
+    render_targets_[i]->Bind();
+    render_targets_[i]->Clear();
+    if (i != static_cast<int>(cascade_count_) - 1) {
+      render_targets_[i + 1]->BindTexture(GL_TEXTURE2);
+    }
     rc::Surface::Instnace().Draw();
-    std::swap(render_targets_[0], render_targets_[1]);
   }
+
+  ++internal_frame_counter;
 }
 
-void RadianceCascadesNode::UpdateUniforms() {
+void CachedCascadesNode::UpdateUniforms() {
   if (!parameters_.dirty) {
     return;
   }

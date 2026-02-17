@@ -2,8 +2,6 @@
 
 #include "glad/include/glad/glad.h"
 
-#include <print>
-
 #include "constants.h"
 
 namespace rc {
@@ -29,7 +27,7 @@ void Surface::Draw() {
   glBindVertexArray(vao_);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
-  // glFinish();
+  glFinish();
 }
 
 Surface::~Surface() {
