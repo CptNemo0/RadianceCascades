@@ -20,8 +20,11 @@ void main()
     vec4 color = texture(drawing_texture, uv);
 
     if (dist < brush_radius * 0.9) {
-        color_ = vec4(brush_color, !eraser);
-        return;
+        if (eraser) {
+            color_ = vec4(0.0);
+            return;
+        }
+        color_ = vec4(brush_color, 1.0);
     } else {
         color_ = color;
     }

@@ -30,7 +30,7 @@ void main()
     vec2 angle_jitter = texture(noise_texture, uv + vec2(time, time)).xy;
     vec4 result_color = this_pixel_color;
 
-    if (this_pixel_color.a > 0.01) {
+    if (this_pixel_color.a > 0.0) {
         color_ = this_pixel_color;
         return;
     }
