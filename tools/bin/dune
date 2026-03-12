@@ -1,0 +1,9 @@
+(executable
+ (name graph)
+ (public_name exe_one)
+ (libraries unix))
+
+(executable
+  (name process_frames)
+  (public_name exe_two)
+  (libraries tools))
