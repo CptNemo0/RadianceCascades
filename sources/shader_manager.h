@@ -35,6 +35,7 @@ class ShaderManager {
       // Flame shader - produces a singular flame in the middle of the scene.
       kFlame = 8,
       kOverlay = 9,
+      kCompare = 10,
       kTypeNum
     };
 
@@ -77,6 +78,10 @@ class ShaderManager {
 
       if (value == "overlay") {
         return ShaderType::kOverlay;
+      }
+
+      if (value == "compare") {
+        return ShaderType::kCompare;
       }
 
       throw std::runtime_error(

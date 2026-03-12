@@ -14,6 +14,7 @@
 #include "flame_generator.h"
 #include "render_nodes/cached_cascades_node.h"
 #include "render_nodes/canvas_node.h"
+#include "render_nodes/comparison_node.h"
 #include "render_nodes/copy_node.h"
 #include "render_nodes/fire_node.h"
 #include "render_nodes/global_illumination_node.h"
@@ -64,10 +65,16 @@ void Renderer::Initialize() {
 
   cached_params_.render_frequencies_.resize(cached_params_.cascade_count);
   std::ranges::fill(cached_params_.render_frequencies_, 1);
+
   std::unique_ptr<rc::CachedCascadesNode> cached_rc_node =
     std::make_unique<rc::CachedCascadesNode>(
       "CachedCascadesNode", cached_params_,
       std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
+
+  std::unique_ptr<rc::ComparisonNode> comparison_node =
+    std::make_unique<rc::ComparisonNode>(
+      "ComparisonNode", std::initializer_list<rc::RenderNode*>{
+                          rc_node.get(), cached_rc_node.get()});
 
   cascades_pipeline_.push_back(canvas_node.get());
   cascades_pipeline_.push_back(flame_node.get());
@@ -90,6 +97,15 @@ void Renderer::Initialize() {
   cached_rc_pipeline_.push_back(sdf_node.get());
   cached_rc_pipeline_.push_back(cached_rc_node.get());
 
+  comparison_rc_pipeline_.push_back(canvas_node.get());
+  comparison_rc_pipeline_.push_back(flame_node.get());
+  comparison_rc_pipeline_.push_back(uv_colorspace_node.get());
+  comparison_rc_pipeline_.push_back(jfa_node.get());
+  comparison_rc_pipeline_.push_back(sdf_node.get());
+  comparison_rc_pipeline_.push_back(cached_rc_node.get());
+  comparison_rc_pipeline_.push_back(rc_node.get());
+  comparison_rc_pipeline_.push_back(comparison_node.get());
+
   nodes_.push_back(std::move(canvas_node));
   nodes_.push_back(std::move(flame_node));
   nodes_.push_back(std::move(uv_colorspace_node));
@@ -98,6 +114,7 @@ void Renderer::Initialize() {
   nodes_.push_back(std::move(gi_node));
   nodes_.push_back(std::move(rc_node));
   nodes_.push_back(std::move(cached_rc_node));
+  nodes_.push_back(std::move(comparison_node));
 
   stage_to_render_ = gi_pipeline_.size() - 1;
 }
@@ -111,6 +128,8 @@ void Renderer::Render() {
       return cascades_pipeline_;
     case Mode::kCachedRc:
       return cached_rc_pipeline_;
+    case Mode::kComparison:
+      return comparison_rc_pipeline_;
     case Mode::kModeNumber:
       return cascades_pipeline_;
     }
@@ -124,6 +143,9 @@ void Renderer::Render() {
   RenderTarget::BindDefault();
   RenderTarget::ClearDefault();
   [pipeline, this]() {
+    if (mode_ == Mode::kComparison) {
+      return pipeline.back();
+    }
     if (stage_to_render_ < static_cast<i32>(gi_pipeline_.size())) {
       return pipeline[stage_to_render_];
     } else {

@@ -22,6 +22,7 @@ class Renderer {
       kGi = 0,
       kRc = 1,
       kCachedRc = 2,
+      kComparison = 3,
       kModeNumber
     };
 
@@ -48,6 +49,7 @@ class Renderer {
     std::vector<RenderNode*> cascades_pipeline_;
     std::vector<RenderNode*> gi_pipeline_;
     std::vector<RenderNode*> cached_rc_pipeline_;
+    std::vector<RenderNode*> comparison_rc_pipeline_;
 
     GlobalIlluminationNode::Parameters global_illumination_params_;
     RadianceCascadesNode::Parameters cascades_params_;

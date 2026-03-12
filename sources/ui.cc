@@ -19,7 +19,7 @@ namespace {
 
 // Imgui wants this old format...
 const char* gModeStrings[] = {"Global illumination", "Radiance cascades",
-                              "Cached cascades"};
+                              "Cached cascades", "Comparison"};
 
 } // namespace
 
@@ -128,6 +128,86 @@ void Ui::Render() {
     renderer_->mode_ = static_cast<Renderer::Mode>(current_mode_index);
   }
 
+  auto core_mode = [&] {
+    if (ImGui::Checkbox("Use SDF", &renderer_->cascades_params_.use_sdf)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
+                         renderer_->cascades_pipeline_.size() - 1)) {
+    }
+
+    if (ImGui::SliderInt("Step count", &renderer_->cascades_params_.step_count,
+                         1, 128)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat("Proximity threshold",
+                           &renderer_->cascades_params_.proximity_epsilon,
+                           0.00001f, 0.005f, "%.5f")) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Base rays count",
+                         &renderer_->cascades_params_.base_ray_count, 4, 64)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Cascade count",
+                         &renderer_->cascades_params_.cascade_count, 1, 16)) {
+      renderer_->cascades_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat("Ray overlap", &renderer_->cascades_params_.overlap,
+                           0.0f, 2.0f, "%.2f")) {
+      renderer_->cascades_params_.dirty = true;
+    }
+  };
+
+  auto cache_mode = [&] {
+    if (ImGui::Checkbox("Use SDF (cached)",
+                        &renderer_->cached_params_.use_sdf)) {
+      renderer_->cached_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Stage to render (cached)",
+                         &renderer_->stage_to_render_, 0,
+                         renderer_->cached_rc_pipeline_.size() - 1)) {
+    }
+
+    if (ImGui::SliderInt("Step count (cached)",
+                         &renderer_->cached_params_.step_count, 1, 128)) {
+      renderer_->cached_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat("Proximity threshold (cached)",
+                           &renderer_->cached_params_.proximity_epsilon,
+                           0.00001f, 0.005f, "%.5f")) {
+      renderer_->cached_params_.dirty = true;
+    }
+
+    if (ImGui::SliderInt("Base rays count (cached)",
+                         &renderer_->cached_params_.base_ray_count, 4, 64)) {
+      renderer_->cached_params_.dirty = true;
+    }
+
+    if (ImGui::SliderFloat("Ray overlap (cached)",
+                           &renderer_->cached_params_.overlap, 0.0f, 2.0f,
+                           "%.2f")) {
+      renderer_->cached_params_.dirty = true;
+    }
+
+    for (auto i{0uz}; i < renderer_->cached_params_.render_frequencies_.size();
+         ++i) {
+      auto title = std::format("Cascade {} reneder frequency: ", i);
+      ImGui::SliderInt(title.c_str(),
+                       &(renderer_->cached_params_.render_frequencies_[i]), 1,
+                       100);
+    }
+  };
+
+  static float remap = 1.0;
+
   switch (renderer_->mode_) {
   case Renderer::Mode::kGi:
     if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
@@ -166,76 +246,20 @@ void Ui::Render() {
     break;
 
   case Renderer::Mode::kRc:
-    if (ImGui::Checkbox("Use SDF", &renderer_->cascades_params_.use_sdf)) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
-    if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
-                         renderer_->cascades_pipeline_.size() - 1)) {
-    }
-
-    if (ImGui::SliderInt("Step count", &renderer_->cascades_params_.step_count,
-                         1, 128)) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
-    if (ImGui::SliderFloat("Proximity threshold",
-                           &renderer_->cascades_params_.proximity_epsilon,
-                           0.00001f, 0.005f, "%.5f")) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
-    if (ImGui::SliderInt("Base rays count",
-                         &renderer_->cascades_params_.base_ray_count, 4, 64)) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
-    if (ImGui::SliderInt("Cascade count",
-                         &renderer_->cascades_params_.cascade_count, 1, 16)) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
-    if (ImGui::SliderFloat("Ray overlap", &renderer_->cascades_params_.overlap,
-                           0.0f, 2.0f, "%.2f")) {
-      renderer_->cascades_params_.dirty = true;
-    }
+    core_mode();
     break;
   case Renderer::Mode::kCachedRc:
-    if (ImGui::Checkbox("Use SDF", &renderer_->cached_params_.use_sdf)) {
-      renderer_->cached_params_.dirty = true;
-    }
+    core_mode();
+    cache_mode();
+    break;
+  case rc::Renderer::Mode::kComparison:
+    core_mode();
+    cache_mode();
 
-    if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
-                         renderer_->cascades_pipeline_.size() - 1)) {
-    }
-
-    if (ImGui::SliderInt("Step count", &renderer_->cached_params_.step_count, 1,
-                         128)) {
-      renderer_->cached_params_.dirty = true;
-    }
-
-    if (ImGui::SliderFloat("Proximity threshold",
-                           &renderer_->cached_params_.proximity_epsilon,
-                           0.00001f, 0.005f, "%.5f")) {
-      renderer_->cached_params_.dirty = true;
-    }
-
-    if (ImGui::SliderInt("Base rays count",
-                         &renderer_->cached_params_.base_ray_count, 4, 64)) {
-      renderer_->cached_params_.dirty = true;
-    }
-
-    if (ImGui::SliderFloat("Ray overlap", &renderer_->cached_params_.overlap,
-                           0.0f, 2.0f, "%.2f")) {
-      renderer_->cached_params_.dirty = true;
-    }
-
-    for (auto i{0uz}; i < renderer_->cached_params_.render_frequencies_.size();
-         ++i) {
-      auto title = std::format("Cascade {} reneder frequency: ", i);
-      ImGui::SliderInt(title.c_str(),
-                       &(renderer_->cached_params_.render_frequencies_[i]), 1,
-                       100);
+    if (ImGui::SliderFloat("Range", &remap, 0.0f, 1.0f)) {
+      ShaderManager::Instance()
+        .Use(ShaderManager::ShaderType::kCompare)
+        ->setFloat("remap", remap);
     }
 
     break;
