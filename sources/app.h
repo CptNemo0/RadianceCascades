@@ -56,8 +56,6 @@ class App {
 
     void EndFrame();
 
-    float GetTime();
-
     GLFWwindow* window_{};
 
     Renderer* scene_renderer() {
@@ -82,6 +80,10 @@ class App {
 
     void StopMeasuring();
 
+    float GetTime() const {
+      return time_;
+    }
+
   private:
     friend class Ui;
 
@@ -93,6 +95,9 @@ class App {
 
     u64 frames_measured_{};
     bool is_measuring_;
+
+    float time_{};
+    float time_normalizer_{};
 
     std::vector<Observer*> observers_;
 };

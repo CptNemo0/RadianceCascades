@@ -67,6 +67,11 @@ void App::StartFrame() {
   if (RMBPressed()) {
     RegisterMousePosition();
   }
+
+  time_ = App::Instance().GetTime() * 1000.f - time_normalizer_;
+  if (time_ > 1000.0f) {
+    time_normalizer_ += 1000.0f;
+  }
 }
 
 bool App::ShouldRun() {
@@ -96,10 +101,6 @@ void App::EndFrame() {
     return;
   }
   frames_measured_++;
-}
-
-float App::GetTime() {
-  return static_cast<float>(glfwGetTime());
 }
 
 void App::AddObserver(App::Observer* observer) {

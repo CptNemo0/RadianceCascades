@@ -1,5 +1,6 @@
 #include "flame_generator.h"
 
+#include "GLFW/glfw3.h"
 #include "constants.h"
 #include "glad/include/glad/glad.h"
 #include "glm/fwd.hpp"
@@ -64,7 +65,7 @@ void FlameGenerator::RenderFlames() {
   render_target_fire_.Bind();
   render_target_fire_.Clear();
   noise_texture_->BindTexture(GL_TEXTURE0);
-  flame_shader->setFloat("time", App::Instance().GetTime());
+  flame_shader->setFloat("time", glfwGetTime());
   flame_shader->setFloat("percentage",
                          (flame_size_ / gMaxBrushRadius) * gMaxFlameSize);
   flame_shader->setFloat("speed", flame_speed_);

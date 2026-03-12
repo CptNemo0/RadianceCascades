@@ -49,7 +49,7 @@ void GlobalIlluminationNode::Forward() {
   const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
   BindInputs();
   UpdateUniforms();
-  shader->setFloat("time", time);
+  shader->setFloat("time", App::Instance().GetTime());
   gi_render_target_->Bind();
   gi_render_target_->Clear();
   previous_frame_->BindTexture(GL_TEXTURE0 + inputs_.size() + 0);

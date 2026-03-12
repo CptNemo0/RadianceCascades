@@ -90,8 +90,8 @@ void Canvas::Draw() {
     return;
   }
 
-  auto sp = selected_position_;
-  sp *= glm::vec2(gOneOverWidth, gOneOverHeight);
+  const glm::vec2 sp =
+    selected_position_ * glm::vec2(gOneOverWidth, gOneOverHeight);
 
   ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
   render_targets_[0]->Bind();
