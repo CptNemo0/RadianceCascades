@@ -3,6 +3,8 @@
 
 #include <array>
 #include <chrono>
+#include <queue>
+#include <vector>
 
 #include "glad/include/glad/glad.h"
 #include "glm/fwd.hpp"
@@ -13,6 +15,8 @@
 #include "constants.h"
 #include "render_target.h"
 #include "scoped_observation.h"
+#include "utility"
+#include "utility.h"
 
 namespace rc {
 
@@ -21,6 +25,14 @@ class Ui;
 // The main drawing class.
 class Canvas : public App::Observer {
   public:
+    struct RandomPoint {
+        glm::vec2 position =
+          RandomVec2(20.0f, static_cast<float>(gScreenWidth) - 20.0f) *
+          glm::vec2(gOneOverWidth, gOneOverHeight);
+        float radius = Random(10.0f, 20.0f);
+        glm::vec3 color = RandomVec3(0.0f, 1.0f);
+    };
+
     Canvas(u64 height, u64 width, u64 brush_radius = 10,
            glm::vec3 brush_color = {1.0f, 1.0f, 1.0f});
 
@@ -54,6 +66,19 @@ class Canvas : public App::Observer {
       brush_radius_ = radius;
     }
 
+    void ClearCanvas() {
+      render_targets_[0]->Bind();
+      render_targets_[0]->Clear();
+      render_targets_[1]->Bind();
+      render_targets_[1]->Clear();
+      RenderTarget::BindDefault();
+      first_ = true;
+    };
+
+    void DrawPoint(const glm::vec2 sp);
+
+    void DrawPredefined();
+
   private:
     friend class Ui;
 
@@ -71,16 +96,18 @@ class Canvas : public App::Observer {
     glm::vec2 previous_position_;
     glm::vec2 selected_position_;
 
-    rc::RenderTarget render_target_canvas_1{
+    rc::RenderTarget render_target_canvas_1_{
       rc::gScreenWidth, rc::gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
-    rc::RenderTarget render_target_canvas_2{
+    rc::RenderTarget render_target_canvas_2_{
       rc::gScreenWidth, rc::gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
-    std::array<rc::RenderTarget*, 2> render_targets_{&render_target_canvas_1,
-                                                     &render_target_canvas_2};
+    std::array<rc::RenderTarget*, 2> render_targets_{&render_target_canvas_1_,
+                                                     &render_target_canvas_2_};
 
     ScopedObservation<Canvas, App> app_observation_;
 
-    i32 cached_position_location;
+    i32 cached_position_location_;
+
+    std::vector<RandomPoint> predefined_points_;
 };
 
 } // namespace rc

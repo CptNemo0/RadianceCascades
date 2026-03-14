@@ -19,8 +19,7 @@
 // Those noises are vide coded, they work this is what matters in their case.
 namespace {
 
-std::random_device rd;
-std::mt19937 gen(rd());
+std::mt19937 gen(1000);
 std::uniform_real_distribution<float> distribution(-0.25f, 0.25f);
 
 float Fade(float t) {
@@ -98,8 +97,22 @@ glm::vec4 RandomVec4() {
                    1.0f};
 }
 
-glm::vec2 RandomVec2() {
-  return glm::normalize(glm::vec2(distribution(gen), distribution(gen)));
+float Random(float min, float max) {
+  return (((distribution(gen) + 0.25f) * 2.0f) * (max - min)) + min;
+}
+
+glm::vec2 RandomVec2(float min, float max) {
+  auto next = [&] {
+    return Random(min, max);
+  };
+  return {next(), next()};
+}
+
+glm::vec3 RandomVec3(float min, float max) {
+  auto next = [&] {
+    return Random(min, max);
+  };
+  return {next(), next(), next()};
 }
 
 std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width, u64 height,

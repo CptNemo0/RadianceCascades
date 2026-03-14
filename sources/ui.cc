@@ -73,6 +73,15 @@ void Ui::Render() {
     ImGui::Text("Measuring...");
   }
 
+  if (ImGui::Button("Clear")) {
+    renderer_->canvas()->ClearCanvas();
+  }
+
+  if (ImGui::Button("Draw Predefined")) {
+    renderer_->canvas()->ClearCanvas();
+    renderer_->canvas()->DrawPredefined();
+  }
+
   if (ImGui::ColorEdit3("Brush color",
                         glm::value_ptr(renderer_->canvas_->brush_color_))) {
     renderer_->canvas_->first_ = true;

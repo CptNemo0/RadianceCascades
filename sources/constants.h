@@ -11,8 +11,8 @@ namespace rc {
 inline constexpr std::string_view gWindowName = "Radiance Cascades";
 inline constexpr std::string_view gPathToShadersList = "shaders\\shaders.list";
 
-inline constexpr u32 gScreenWidth = 256 * 4;
-inline constexpr u32 gScreenHeight = 256 * 4;
+inline constexpr u32 gScreenWidth = 256 * 3;
+inline constexpr u32 gScreenHeight = 256 * 3;
 
 inline constexpr float gOneOverWidth = 1.0f / gScreenWidth;
 inline constexpr float gOneOverHeight = 1.0f / gScreenHeight;
@@ -35,7 +35,7 @@ inline constexpr f32 gMaxFlameSize = 0.6;
 
 inline constexpr u64 gMaxFlameCount = 16;
 
-inline constexpr u64 gFramesToMeasure = 5 * 1024;
+inline constexpr u64 gFramesToMeasure = 1024;
 
 // Full-screen quad vertices:
 // Positions (x, y, z) | Texture Coords (u, v)

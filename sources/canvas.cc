@@ -35,8 +35,12 @@ Canvas::Canvas(u64 height, u64 width, u64 brush_radius, glm::vec3 brush_color)
   canvas_shader->setVec3("brush_color", brush_color_);
   canvas_shader->setBool("eraser", eraser_);
 
-  cached_position_location =
+  cached_position_location_ =
     glGetUniformLocation(canvas_shader->id_, "position");
+
+  for (int i = 0; i < 50; ++i) {
+    predefined_points_.push_back(RandomPoint{});
+  }
 }
 
 void Canvas::GetMousePositionOnRMB(const glm::vec2& position) {
@@ -85,6 +89,28 @@ void Canvas::GetMousePositionOnRMB(const glm::vec2& position) {
   last_draw_ = now;
 }
 
+void Canvas::DrawPoint(const glm::vec2 sp) {
+  ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
+  render_targets_[0]->Bind();
+  render_targets_[0]->Clear();
+  render_targets_[1]->BindTexture(GL_TEXTURE0);
+  glUniform2f(cached_position_location_, sp.x, sp.y);
+  Surface::Instnace().Draw();
+  std::swap(render_targets_[0], render_targets_[1]);
+};
+
+void Canvas::DrawPredefined() {
+  for (auto& point : predefined_points_) {
+    const Shader* shader =
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
+    shader->setVec3("brush_color", point.color);
+    shader->setFloat("brush_radius",
+                     point.radius * point.radius * gBrushScale * gBrushScale);
+    DrawPoint(point.position);
+  };
+  first_ = true;
+};
+
 void Canvas::Draw() {
   if (first_) {
     return;
@@ -93,13 +119,21 @@ void Canvas::Draw() {
   const glm::vec2 sp =
     selected_position_ * glm::vec2(gOneOverWidth, gOneOverHeight);
 
-  ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
-  render_targets_[0]->Bind();
-  render_targets_[0]->Clear();
-  render_targets_[1]->BindTexture(GL_TEXTURE0);
-  glUniform2f(cached_position_location, sp.x, sp.y);
-  Surface::Instnace().Draw();
-  std::swap(render_targets_[0], render_targets_[1]);
+  DrawPoint(sp);
+
+  // ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
+  // render_targets_[0]->Bind();
+  // render_targets_[0]->Clear();
+  // render_targets_[1]->BindTexture(GL_TEXTURE0);
+  // glUniform2f(cached_position_location_, sp.x, sp.y);
+  // Surface::Instnace().Draw();
+  // std::swap(render_targets_[0], render_targets_[1]);
+
+  /*
+   *  ShaderManager::Instance()
+     .Use(ShaderManager::ShaderType::kCanvas)
+     ->setVec3("brush_color", renderer_->canvas_->brush_color_);
+   */
 }
 
 } // namespace rc

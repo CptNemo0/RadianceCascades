@@ -12,6 +12,12 @@ namespace rc {
 
 glm::vec4 RandomVec4();
 
+glm::vec3 RandomVec3(float min, float max);
+
+glm::vec2 RandomVec2(float min, float max);
+
+float Random(float min, float max);
+
 std::unique_ptr<Texture> GetNoiseTexture(u64 width, u64 height);
 
 std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width, u64 height,
