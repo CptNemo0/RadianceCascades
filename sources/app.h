@@ -81,7 +81,7 @@ class App {
     void StopMeasuring();
 
     float GetTime() const {
-      return time_;
+      return glfwGetTime();
     }
 
   private:

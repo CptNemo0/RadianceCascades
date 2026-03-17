@@ -22,21 +22,21 @@ class TimedScope {
     void operator=(const TimedScope&) = delete;
     void operator=(TimedScope&&) = delete;
 
-    ~TimedScope() {
-      if (aggregator_) {
-        aggregator_->AddMeasure(Elapsed());
-      }
-    }
-
     i64 Elapsed() const {
       return std::chrono::duration_cast<std::chrono::microseconds>(
                clock::now() - start_)
         .count();
     }
 
+    ~TimedScope() {
+      if (aggregator_) {
+        aggregator_->AddMeasure(Elapsed());
+      }
+    }
+
   private:
     MeasurementAggregator* aggregator_;
-    std::chrono::high_resolution_clock::time_point start_;
+    clock::time_point start_;
 };
 
 } // namespace rc

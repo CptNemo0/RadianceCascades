@@ -95,7 +95,7 @@ void Canvas::DrawPoint(const glm::vec2 sp) {
   render_targets_[0]->Clear();
   render_targets_[1]->BindTexture(GL_TEXTURE0);
   glUniform2f(cached_position_location_, sp.x, sp.y);
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
   std::swap(render_targets_[0], render_targets_[1]);
 };
 

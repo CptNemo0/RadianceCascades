@@ -125,13 +125,13 @@ void App::StartMeasuring() {
   frames_measured_ = 0;
   is_measuring_ = true;
   measurement_manager_->StartMeasuring(gFramesToMeasure);
-  Surface::Instnace().measuring_ = true;
+  Surface::Instance().measuring_ = true;
 }
 
 void App::StopMeasuring() {
   measurement_manager_->StopMeasuring();
   is_measuring_ = false;
-  Surface::Instnace().measuring_ = false;
+  Surface::Instance().measuring_ = false;
 }
 
 } // namespace rc

@@ -71,7 +71,7 @@ void CachedCascadesNode::Forward() {
     if (i != static_cast<int>(cascade_count_) - 1) {
       render_targets_[i + 1]->BindTexture(GL_TEXTURE2);
     }
-    rc::Surface::Instnace().Draw();
+    rc::Surface::Instance().Draw();
   }
 
   ++internal_frame_counter;

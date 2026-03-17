@@ -37,7 +37,7 @@ void FireNode::Forward() {
   output_texture_->Clear();
   flame_generator_.BindTexture(GL_TEXTURE0);
   inputs_[0]->BindOutput(GL_TEXTURE1);
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
 }
 
 } // namespace rc

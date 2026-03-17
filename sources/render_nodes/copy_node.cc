@@ -49,7 +49,7 @@ void CopyNode::Forward() {
     RenderTarget::ClearDefault();
   }
   BindInputs();
-  rc::Surface::Instnace().Draw();
+  rc::Surface::Instance().Draw();
 }
 
 } // namespace rc

@@ -21,7 +21,7 @@ void ComparisonNode::Forward() {
   shader->setInt("prediction", 1);
   BindInputs();
   output_->Bind();
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
 };
 
 } // namespace rc

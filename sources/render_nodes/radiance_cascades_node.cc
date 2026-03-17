@@ -66,7 +66,7 @@ void RadianceCascadesNode::Forward() {
     render_targets_[0]->Bind();
     render_targets_[0]->ClearDefault();
     render_targets_[1]->BindTexture(GL_TEXTURE2);
-    rc::Surface::Instnace().Draw();
+    rc::Surface::Instance().Draw();
     std::swap(render_targets_[0], render_targets_[1]);
   }
 }

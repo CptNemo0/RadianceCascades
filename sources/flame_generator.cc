@@ -69,7 +69,7 @@ void FlameGenerator::RenderFlames() {
   flame_shader->setFloat("percentage",
                          (flame_size_ / gMaxBrushRadius) * gMaxFlameSize);
   flame_shader->setFloat("speed", flame_speed_);
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
 
   const Shader* combine_shader =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);
@@ -101,7 +101,7 @@ void FlameGenerator::RenderFlames() {
     combined_rts_[1]->Bind();
     combined_rts_[1]->Clear();
 
-    Surface::Instnace().Draw();
+    Surface::Instance().Draw();
 
     std::swap(combined_rts_[0], combined_rts_[1]);
   }

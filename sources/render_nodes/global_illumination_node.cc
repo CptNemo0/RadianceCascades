@@ -54,13 +54,13 @@ void GlobalIlluminationNode::Forward() {
   gi_render_target_->Clear();
   previous_frame_->BindTexture(GL_TEXTURE0 + inputs_.size() + 0);
   noise_texture_->BindTexture(GL_TEXTURE0 + inputs_.size() + 1);
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
 
   ShaderManager::Instance().Use(ShaderType::kSurface);
   previous_frame_->Bind();
   previous_frame_->Clear();
   gi_render_target_->BindTexture(GL_TEXTURE0);
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
 }
 
 void GlobalIlluminationNode::UpdateUniforms() {

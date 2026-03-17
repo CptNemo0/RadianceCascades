@@ -7,9 +7,9 @@ namespace rc {
 
 class Surface {
   public:
-    static Surface& Instnace() {
-      static Surface instnace;
-      return instnace;
+    static Surface& Instance() {
+      static Surface instance;
+      return instance;
     }
 
     void Draw();

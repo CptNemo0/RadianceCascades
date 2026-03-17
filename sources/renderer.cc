@@ -153,7 +153,7 @@ void Renderer::Render() {
     }
   }()
     ->BindOutput(GL_TEXTURE0);
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
 }
 
 } // namespace rc

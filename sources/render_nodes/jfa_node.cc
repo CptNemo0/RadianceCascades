@@ -47,7 +47,7 @@ void JfaNode::Forward() {
     render_targets_[1]->Bind();
     render_targets_[1]->Clear();
     render_targets_[0]->BindTexture(GL_TEXTURE0);
-    rc::Surface::Instnace().Draw();
+    rc::Surface::Instance().Draw();
     std::swap(render_targets_[0], render_targets_[1]);
     ++jfa_swaps;
   }
@@ -62,7 +62,7 @@ void JfaNode::Initialize() {
   inputs_[0]->BindOutput(GL_TEXTURE0);
   render_target_1->Bind();
   render_target_1->Clear();
-  Surface::Instnace().Draw();
+  Surface::Instance().Draw();
   render_targets_[0] = render_target_1.get();
   render_targets_[1] = render_target_2.get();
   jfa_swaps = 0;
