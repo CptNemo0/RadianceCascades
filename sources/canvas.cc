@@ -28,12 +28,12 @@ Canvas::Canvas(u64 height, u64 width, u64 brush_radius, glm::vec3 brush_color)
 
   const rc::Shader* canvas_shader =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
-  canvas_shader->setFloat("width", static_cast<float>(width_));
-  canvas_shader->setFloat("height", static_cast<float>(height_));
-  canvas_shader->setFloat("brush_radius", brush_radius_ * brush_radius_ *
+  canvas_shader->SetFloat("width", static_cast<float>(width_));
+  canvas_shader->SetFloat("height", static_cast<float>(height_));
+  canvas_shader->SetFloat("brush_radius", brush_radius_ * brush_radius_ *
                                             gBrushScale * gBrushScale);
-  canvas_shader->setVec3("brush_color", brush_color_);
-  canvas_shader->setBool("eraser", eraser_);
+  canvas_shader->SetVec3("brush_color", brush_color_);
+  canvas_shader->SetBool("eraser", eraser_);
 
   cached_position_location_ =
     glGetUniformLocation(canvas_shader->id_, "position");
@@ -103,8 +103,8 @@ void Canvas::DrawPredefined() {
   for (auto& point : predefined_points_) {
     const Shader* shader =
       ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
-    shader->setVec3("brush_color", point.color);
-    shader->setFloat("brush_radius",
+    shader->SetVec3("brush_color", point.color);
+    shader->SetFloat("brush_radius",
                      point.radius * point.radius * gBrushScale * gBrushScale);
     DrawPoint(point.position);
   };

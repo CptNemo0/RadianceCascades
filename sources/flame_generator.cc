@@ -65,17 +65,17 @@ void FlameGenerator::RenderFlames() {
   render_target_fire_.Bind();
   render_target_fire_.Clear();
   noise_texture_->BindTexture(GL_TEXTURE0);
-  flame_shader->setFloat("time", glfwGetTime());
-  flame_shader->setFloat("percentage",
+  flame_shader->SetFloat("time", glfwGetTime());
+  flame_shader->SetFloat("percentage",
                          (flame_size_ / gMaxBrushRadius) * gMaxFlameSize);
-  flame_shader->setFloat("speed", flame_speed_);
+  flame_shader->SetFloat("speed", flame_speed_);
   Surface::Instance().Draw();
 
   const Shader* combine_shader =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);
-  combine_shader->setInt("texture_1", 0);
-  combine_shader->setInt("texture_2", 1);
-  combine_shader->setVec2("offset_2", glm::vec2(0.0));
+  combine_shader->SetInt("texture_1", 0);
+  combine_shader->SetInt("texture_2", 1);
+  combine_shader->SetVec2("offset_2", glm::vec2(0.0));
   render_target_fire_.BindTexture(GL_TEXTURE0);
 
   for (auto* rt : combined_rts_) {
@@ -91,7 +91,7 @@ void FlameGenerator::RenderFlames() {
       continue;
     }
 
-    combine_shader->setVec2(
+    combine_shader->SetVec2(
       "offset_1", (position * reverse_resolution - glm::vec2(0.5f, 0.5f)) *
                       glm::vec2(-1.0f, 1.0f) +
                     glm::vec2(0.0, -0.8f * (flame_size_ / gMaxBrushRadius) *

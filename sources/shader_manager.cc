@@ -77,7 +77,7 @@ const Shader* ShaderManager::Use(ShaderManager::ShaderType type) const {
   }
 
   const Shader* return_value = shaders_[static_cast<u64>(type)].get();
-  return_value->use();
+  return_value->Use();
   return return_value;
 }
 

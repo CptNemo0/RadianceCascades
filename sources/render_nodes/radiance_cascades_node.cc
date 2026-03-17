@@ -31,21 +31,21 @@ RadianceCascadesNode::RadianceCascadesNode(
                                      GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)) {
   const rc::Shader* shader_rc =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
-  shader_rc->setVec2("resolution",
+  shader_rc->SetVec2("resolution",
                      glm::vec2(static_cast<float>(rc::gScreenWidth),
                                static_cast<float>(rc::gScreenHeight)));
-  shader_rc->setInt("color_texture", 0);
-  shader_rc->setInt("sdf_texture", 1);
-  shader_rc->setInt("upper_cascade_texture", 2);
+  shader_rc->SetInt("color_texture", 0);
+  shader_rc->SetInt("sdf_texture", 1);
+  shader_rc->SetInt("upper_cascade_texture", 2);
 
   const rc::Shader* shader_rc_sdf =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
-  shader_rc_sdf->setVec2("resolution",
+  shader_rc_sdf->SetVec2("resolution",
                          glm::vec2(static_cast<float>(rc::gScreenWidth),
                                    static_cast<float>(rc::gScreenHeight)));
-  shader_rc_sdf->setInt("color_texture", 0);
-  shader_rc_sdf->setInt("sdf_texture", 1);
-  shader_rc_sdf->setInt("upper_cascade_texture", 2);
+  shader_rc_sdf->SetInt("color_texture", 0);
+  shader_rc_sdf->SetInt("sdf_texture", 1);
+  shader_rc_sdf->SetInt("upper_cascade_texture", 2);
 
   render_targets_[0] = render_target_1_.get();
   render_targets_[1] = render_target_2_.get();
@@ -61,8 +61,8 @@ void RadianceCascadesNode::Forward() {
 
   // Last frame is second in the rc_render_targets array.
   for (int i{parameters_.cascade_count - 1}; i > -1; --i) {
-    shader->setInt("cascade_index", i);
-    shader->setBool("base_level", i == 0);
+    shader->SetInt("cascade_index", i);
+    shader->SetBool("base_level", i == 0);
     render_targets_[0]->Bind();
     render_targets_[0]->ClearDefault();
     render_targets_[1]->BindTexture(GL_TEXTURE2);
@@ -78,11 +78,11 @@ void RadianceCascadesNode::UpdateUniforms() {
   const rc::Shader* shader_rc = ShaderManager::Instance().Use(
     parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
                         : ShaderManager::ShaderType::kRc);
-  shader_rc->setFloat("base_ray_count", parameters_.base_ray_count);
-  shader_rc->setFloat("cascade_count", parameters_.cascade_count);
-  shader_rc->setFloat("overlap", parameters_.overlap);
-  shader_rc->setInt("step_count", parameters_.step_count);
-  shader_rc->setFloat("proximity_epsilon", parameters_.proximity_epsilon);
+  shader_rc->SetFloat("base_ray_count", parameters_.base_ray_count);
+  shader_rc->SetFloat("cascade_count", parameters_.cascade_count);
+  shader_rc->SetFloat("overlap", parameters_.overlap);
+  shader_rc->SetInt("step_count", parameters_.step_count);
+  shader_rc->SetFloat("proximity_epsilon", parameters_.proximity_epsilon);
   parameters_.dirty = false;
 }
 

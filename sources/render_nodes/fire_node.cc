@@ -29,10 +29,10 @@ void FireNode::Forward() {
   flame_generator_.RenderFlames();
   const Shader* add_shader =
     ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);
-  add_shader->setInt("texture_1", 0);
-  add_shader->setInt("texture_2", 1);
-  add_shader->setVec2("offset_1", glm::vec2(0.0f, 0.0f));
-  add_shader->setVec2("offset_2", glm::vec2(0.0f, 0.0f));
+  add_shader->SetInt("texture_1", 0);
+  add_shader->SetInt("texture_2", 1);
+  add_shader->SetVec2("offset_1", glm::vec2(0.0f, 0.0f));
+  add_shader->SetVec2("offset_2", glm::vec2(0.0f, 0.0f));
   output_texture_->Bind();
   output_texture_->Clear();
   flame_generator_.BindTexture(GL_TEXTURE0);

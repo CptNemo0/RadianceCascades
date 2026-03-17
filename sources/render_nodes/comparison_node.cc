@@ -17,8 +17,8 @@ ComparisonNode::ComparisonNode(std::string_view name,
 void ComparisonNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   const auto* shader = ShaderManager::Instance().Use(ShaderType::kCompare);
-  shader->setInt("ground_truth", 0);
-  shader->setInt("prediction", 1);
+  shader->SetInt("ground_truth", 0);
+  shader->SetInt("prediction", 1);
   BindInputs();
   output_->Bind();
   Surface::Instance().Draw();

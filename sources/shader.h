@@ -59,8 +59,8 @@ class Shader {
       std::string fragmentCode;
       std::print("{} {}\n", vertexPath.string(), fragmentPath.string());
       try {
-        vertexCode = readFile(vertexPath);
-        fragmentCode = readFile(fragmentPath);
+        vertexCode = ReadFile(vertexPath);
+        fragmentCode = ReadFile(fragmentPath);
       } catch (const std::exception& e) {
         std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: " << e.what()
                   << std::endl;
@@ -80,20 +80,20 @@ class Shader {
       vertex = glCreateShader(GL_VERTEX_SHADER);
       glShaderSource(vertex, 1, &vShaderCode, nullptr);
       glCompileShader(vertex);
-      checkCompileErrors(vertex, "VERTEX");
+      CheckCompileErrors(vertex, "VERTEX");
 
       // Fragment Shader
       fragment = glCreateShader(GL_FRAGMENT_SHADER);
       glShaderSource(fragment, 1, &fShaderCode, nullptr);
       glCompileShader(fragment);
-      checkCompileErrors(fragment, "FRAGMENT");
+      CheckCompileErrors(fragment, "FRAGMENT");
 
       // 3. Shader Program
       id_ = glCreateProgram();
       glAttachShader(id_, vertex);
       glAttachShader(id_, fragment);
       glLinkProgram(id_);
-      checkCompileErrors(id_, "PROGRAM");
+      CheckCompileErrors(id_, "PROGRAM");
 
       // 4. Delete the shaders as they're linked into our program now and no
       // longer necessary
@@ -106,39 +106,39 @@ class Shader {
     }
 
     // Activate the shader
-    void use() const {
+    void Use() const {
       glUseProgram(id_);
     }
 
     // Utility uniform functions
-    void setBool(const std::string& name, bool value) const {
+    void SetBool(const std::string& name, bool value) const {
       // std::cout << name << " \n";
       glUniform1i(locations_.at(name), static_cast<int>(value));
     }
 
-    void setInt(const std::string& name, int value) const {
+    void SetInt(const std::string& name, int value) const {
       // std::cout << name << " \n";
       glUniform1i(locations_.at(name), value);
     }
 
-    void setFloat(const std::string& name, float value) const {
+    void SetFloat(const std::string& name, float value) const {
       // std::cout << name << " \n";
       glUniform1f(locations_.at(name), value);
     }
 
-    void setVec2(const std::string& name, const glm::vec2& value) const {
+    void SetVec2(const std::string& name, const glm::vec2& value) const {
       // std::cout << name << " \n";
       glUniform2f(locations_.at(name), value.x, value.y);
     }
 
-    void setVec3(const std::string& name, const glm::vec3& value) const {
+    void SetVec3(const std::string& name, const glm::vec3& value) const {
       // std::cout << name << " \n";
       glUniform3fv(locations_.at(name), 1, glm::value_ptr(value));
     }
 
   private:
     // Helper to read file content into string
-    std::string readFile(const std::filesystem::path& path) {
+    std::string ReadFile(const std::filesystem::path& path) {
       std::ifstream file;
       // Ensure ifstream objects can throw exceptions:
       file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -156,7 +156,7 @@ class Shader {
     }
 
     // Helper to check for compilation/linking errors
-    void checkCompileErrors(unsigned int shader, std::string type) {
+    void CheckCompileErrors(unsigned int shader, std::string type) {
       int success;
       char infoLog[1024];
       if (type != "PROGRAM") {

@@ -87,7 +87,7 @@ void Ui::Render() {
     renderer_->canvas_->first_ = true;
     ShaderManager::Instance()
       .Use(ShaderManager::ShaderType::kCanvas)
-      ->setVec3("brush_color", renderer_->canvas_->brush_color_);
+      ->SetVec3("brush_color", renderer_->canvas_->brush_color_);
   }
 
   if (flame_generator_->register_) {
@@ -99,7 +99,7 @@ void Ui::Render() {
       renderer_->canvas_->first_ = true;
       ShaderManager::Instance()
         .Use(ShaderManager::ShaderType::kCanvas)
-        ->setFloat("brush_radius", renderer_->canvas_->brush_radius_ *
+        ->SetFloat("brush_radius", renderer_->canvas_->brush_radius_ *
                                      renderer_->canvas_->brush_radius_ *
                                      gBrushScale * gBrushScale);
     }
@@ -128,7 +128,7 @@ void Ui::Render() {
     flame_generator_->eraser_ = renderer_->canvas()->eraser_;
     ShaderManager::Instance()
       .Use(ShaderManager::ShaderType::kCanvas)
-      ->setBool("eraser", renderer_->canvas_->eraser_);
+      ->SetBool("eraser", renderer_->canvas_->eraser_);
   }
 
   int current_mode_index = static_cast<int>(renderer_->mode_);
@@ -268,7 +268,7 @@ void Ui::Render() {
     if (ImGui::SliderFloat("Range", &remap, 0.0f, 1.0f)) {
       ShaderManager::Instance()
         .Use(ShaderManager::ShaderType::kCompare)
-        ->setFloat("remap", remap);
+        ->SetFloat("remap", remap);
     }
 
     break;

@@ -32,10 +32,10 @@ GlobalIlluminationNode::GlobalIlluminationNode(
   const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
   // I know, this is not the perfect way to do this. But currently writing
   // parsing logic for this is the last thing on my mind.
-  shader->setInt("color_texture", 0);
-  shader->setInt("sdf_texture", 1);
-  shader->setInt("previous_frame", 2);
-  shader->setInt("noise_texture", 3);
+  shader->SetInt("color_texture", 0);
+  shader->SetInt("sdf_texture", 1);
+  shader->SetInt("previous_frame", 2);
+  shader->SetInt("noise_texture", 3);
 }
 
 void GlobalIlluminationNode::Forward() {
@@ -49,7 +49,7 @@ void GlobalIlluminationNode::Forward() {
   const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
   BindInputs();
   UpdateUniforms();
-  shader->setFloat("time", App::Instance().GetTime());
+  shader->SetFloat("time", App::Instance().GetTime());
   gi_render_target_->Bind();
   gi_render_target_->Clear();
   previous_frame_->BindTexture(GL_TEXTURE0 + inputs_.size() + 0);
@@ -68,11 +68,11 @@ void GlobalIlluminationNode::UpdateUniforms() {
     return;
   }
   const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
-  shader->setInt("step_count", parameters_.step_count);
-  shader->setFloat("proximity_epsilon", parameters_.proximity_epsilon);
-  shader->setFloat("one_over_ray_count", parameters_.one_over_ray_count);
-  shader->setFloat("angle_step", parameters_.angle_step);
-  shader->setFloat("noise", parameters_.noise_amount);
+  shader->SetInt("step_count", parameters_.step_count);
+  shader->SetFloat("proximity_epsilon", parameters_.proximity_epsilon);
+  shader->SetFloat("one_over_ray_count", parameters_.one_over_ray_count);
+  shader->SetFloat("angle_step", parameters_.angle_step);
+  shader->SetFloat("noise", parameters_.noise_amount);
   parameters_.dirty = false;
 }
 

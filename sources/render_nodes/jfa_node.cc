@@ -26,10 +26,10 @@ JfaNode::JfaNode(std::string_view name, RenderNode* initializer_node)
       rc::gScreenWidth, rc::gScreenHeight, GL_RG32F, GL_RG, GL_FLOAT)) {
 
   const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
-  jfa_shader->setFloat("width", rc::gScreenWidth);
-  jfa_shader->setFloat("height", rc::gScreenHeight);
-  jfa_shader->setFloat("one_over_width", rc::gOneOverWidth);
-  jfa_shader->setFloat("one_over_height", rc::gOneOverHeight);
+  jfa_shader->SetFloat("width", rc::gScreenWidth);
+  jfa_shader->SetFloat("height", rc::gScreenHeight);
+  jfa_shader->SetFloat("one_over_width", rc::gOneOverWidth);
+  jfa_shader->SetFloat("one_over_height", rc::gOneOverHeight);
   render_targets_[0] = render_target_1.get();
   render_targets_[1] = render_target_2.get();
 }
@@ -42,7 +42,7 @@ void JfaNode::Forward() {
   u32 steps = std::pow(2, rc::gJfaSteps);
   for (auto i{0uz}; i < rc::gJfaSteps; ++i) {
     steps /= 2;
-    jfa_shader->setInt("step_size", steps);
+    jfa_shader->SetInt("step_size", steps);
 
     render_targets_[1]->Bind();
     render_targets_[1]->Clear();
