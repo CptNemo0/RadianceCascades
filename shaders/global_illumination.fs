@@ -55,7 +55,7 @@ void main()
         }
     }
 
-    result_color *= (one_over_ray_count);
+    result_color *= one_over_ray_count;
+    result_color = texture(previous_frame, uv) * 0.9 + result_color * 0.1;
     color_ = vec4(result_color.rgb, 1.0);
-    //mix(texture(previous_frame, uv), result_color, 0.3);
 }

@@ -27,7 +27,6 @@ class JfaNode : public RenderNode {
   private:
     void Initialize();
 
-    rc::u32 jfa_swaps{0};
     std::unique_ptr<rc::RenderTarget> render_target_1;
     std::unique_ptr<rc::RenderTarget> render_target_2;
     std::array<rc::RenderTarget*, 2> render_targets_;

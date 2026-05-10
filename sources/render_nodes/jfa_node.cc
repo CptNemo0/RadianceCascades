@@ -38,7 +38,6 @@ void JfaNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   Initialize();
   const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
-  jfa_swaps = 0;
   u32 steps = std::pow(2, rc::gJfaSteps);
   for (auto i{0uz}; i < rc::gJfaSteps; ++i) {
     steps /= 2;
@@ -49,12 +48,11 @@ void JfaNode::Forward() {
     render_targets_[0]->BindTexture(GL_TEXTURE0);
     rc::Surface::Instance().Draw();
     std::swap(render_targets_[0], render_targets_[1]);
-    ++jfa_swaps;
   }
 }
 
 void JfaNode::BindOutput(int texture_slot) const {
-  render_targets_[1]->BindTexture(texture_slot);
+  render_targets_[0]->BindTexture(texture_slot);
 }
 
 void JfaNode::Initialize() {
@@ -65,7 +63,6 @@ void JfaNode::Initialize() {
   Surface::Instance().Draw();
   render_targets_[0] = render_target_1.get();
   render_targets_[1] = render_target_2.get();
-  jfa_swaps = 0;
 }
 
 } // namespace rc

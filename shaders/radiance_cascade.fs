@@ -22,8 +22,6 @@ uniform sampler2D color_texture;
 uniform sampler2D sdf_texture;
 uniform sampler2D upper_cascade_texture;
 
-// Real const
-const float srgb = 2.1;
 const float whole = 3.141592 * 2.0;
 
 bool out_of_bounds(vec2 sample_uv) {
@@ -31,7 +29,6 @@ bool out_of_bounds(vec2 sample_uv) {
 }
 
 void main() {
-    vec4 this_pixel_color = texture(color_texture, uv);
     vec2 coord = floor(uv * resolution);
 
     float spacing_base = sqrt(base_ray_count);
@@ -66,7 +63,6 @@ void main() {
         vec2 direction = vec2(cos(angle), -sin(angle));
 
         vec2 sample_uv = probe_uv + interval_start * direction;
-        float current_distance = texture(sdf_texture, sample_uv).r;
 
         if (out_of_bounds(sample_uv)) {
             continue;
@@ -84,7 +80,7 @@ void main() {
             vec4 c = texture(color_texture, sample_uv);
 
             if (c.r != 0.0 || c.g != 0.0 || c.b != 0.0) {
-                radiance += c;
+                radiance_from_ray += c;
                 break;
             }
         }
@@ -104,10 +100,10 @@ void main() {
                     (upper_position + clamped) / resolution
                 );
 
-            radiance += vec4(upper_sample.rgb, upper_sample.a);
+            radiance_from_ray += vec4(upper_sample.rgb, upper_sample.a);
         }
 
-        //radiance += radiance_from_ray;
+        radiance += radiance_from_ray;
     }
 
     color_ = vec4(radiance.rgb / float(base_ray_count), 1.0);

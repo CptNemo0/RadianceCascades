@@ -16,15 +16,11 @@ uniform float proximity_epsilon;
 uniform int cascade_index;
 uniform bool base_level;
 uniform float overlap;
-uniform float angle_start;
-
 // Textures
 uniform sampler2D color_texture;
 uniform sampler2D sdf_texture;
 uniform sampler2D upper_cascade_texture;
 
-// Real const
-const float srgb = 2.1;
 const float whole = 3.141592 * 2.0;
 
 bool out_of_bounds(vec2 sample_uv) {
@@ -32,7 +28,6 @@ bool out_of_bounds(vec2 sample_uv) {
 }
 
 void main() {
-    vec4 this_pixel_color = texture(color_texture, uv);
     vec2 coord = floor(uv * resolution); // Example (125, 250)
 
     float spacing_base = sqrt(base_ray_count); // 2
@@ -64,7 +59,7 @@ void main() {
     for (float i = 0.0; i < base_ray_count; i += 1) {
         float index = base_ray_index + i;
         float angleStep = index + 0.5;
-        float angle = angle_start + angle_step * angleStep;
+        float angle = angle_step * angleStep;
         vec2 direction = vec2(cos(angle), -sin(angle));
 
         vec2 sample_uv = probe_uv + interval_start * direction;

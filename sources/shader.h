@@ -27,6 +27,7 @@ class Shader {
     // The Program ID
     unsigned int id_;
     std::unordered_map<std::string, i32> locations_;
+    std::string name_;
 
     void ParseForUniforms(const std::string& code) {
       // Regex breakdown:
@@ -57,6 +58,7 @@ class Shader {
       // 1. Retrieve the vertex/fragment source code from filePath
       std::string vertexCode;
       std::string fragmentCode;
+      name_ = vertexPath.filename().string();
       std::print("{} {}\n", vertexPath.string(), fragmentPath.string());
       try {
         vertexCode = ReadFile(vertexPath);
@@ -112,27 +114,27 @@ class Shader {
 
     // Utility uniform functions
     void SetBool(const std::string& name, bool value) const {
-      // std::cout << name << " \n";
+      // std::cout << name_ << ": " << name << " \n";
       glUniform1i(locations_.at(name), static_cast<int>(value));
     }
 
     void SetInt(const std::string& name, int value) const {
-      // std::cout << name << " \n";
+      // std::cout << name_ << ": " << name << " \n";
       glUniform1i(locations_.at(name), value);
     }
 
     void SetFloat(const std::string& name, float value) const {
-      // std::cout << name << " \n";
+      // std::cout << name_ << ": " << name << " \n";
       glUniform1f(locations_.at(name), value);
     }
 
     void SetVec2(const std::string& name, const glm::vec2& value) const {
-      // std::cout << name << " \n";
+      // std::cout << name_ << ": " << name << " \n";
       glUniform2f(locations_.at(name), value.x, value.y);
     }
 
     void SetVec3(const std::string& name, const glm::vec3& value) const {
-      // std::cout << name << " \n";
+      // std::cout << name_ << ": " << name << " \n";
       glUniform3fv(locations_.at(name), 1, glm::value_ptr(value));
     }
 

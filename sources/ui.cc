@@ -211,7 +211,7 @@ void Ui::Render() {
 
     for (auto i{0uz}; i < renderer_->cached_params_.render_frequencies_.size();
          ++i) {
-      auto title = std::format("Cascade {} reneder frequency: ", i);
+      auto title = std::format("Cascade {} render frequency: ", i);
       ImGui::SliderInt(title.c_str(),
                        &(renderer_->cached_params_.render_frequencies_[i]), 1,
                        100);
