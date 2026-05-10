@@ -2,12 +2,14 @@
 
 #include "glad/include/glad/glad.h"
 
+#include <format>
 #include <initializer_list>
 #include <memory>
 #include <string_view>
 
 #include "app.h"
 #include "constants.h"
+#include "image_write.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 #include "shader.h"
@@ -61,6 +63,13 @@ void GlobalIlluminationNode::Forward() {
   previous_frame_->Clear();
   gi_render_target_->BindTexture(GL_TEXTURE0);
   Surface::Instance().Draw();
+
+  if (App::Instance().IsMeasuring()) {
+    previous_frame_->Bind();
+    SaveFramebufferToPng(
+      std::format("gi\\{}.png", App::Instance().MeasuredFrameIndex()),
+      gScreenWidth, gScreenHeight);
+  }
 }
 
 void GlobalIlluminationNode::UpdateUniforms() {

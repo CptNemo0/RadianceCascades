@@ -1,5 +1,6 @@
 #include "app.h"
 
+#include "aliasing.h"
 #include "glad/include/glad/glad.h"
 #include "glm/ext/vector_float2.hpp"
 #include <GLFW/glfw3.h>
@@ -52,11 +53,7 @@ void App::Start() {
 
   glfwSwapInterval(0);
 
-  ShaderManager::Instance().LoadShaders();
-  renderer_ = std::make_unique<Renderer>();
-  measurement_manager_ = std::make_unique<MeasurementManager>();
-  renderer_->Initialize();
-  ui_ = std::make_unique<Ui>(window_, renderer_.get());
+  StartImpl();
 }
 
 void App::StartFrame() {
@@ -68,9 +65,16 @@ void App::StartFrame() {
     RegisterMousePosition();
   }
 
-  time_ = App::Instance().GetTime() * 1000.f - time_normalizer_;
-  if (time_ > 1000.0f) {
-    time_normalizer_ += 1000.0f;
+  if (IsMeasuring()) {
+    if (IsMeasuring()) {
+      time_ = static_cast<float>(frames_measured_) * 0.01f;
+    }
+  } else {
+    time_ = static_cast<float>(glfwGetTime()) * 1000.f - time_normalizer_;
+    if (time_ > 1000.0f) {
+      time_normalizer_ += 1000.0f;
+    }
+    time_ *= 0.001f;
   }
 }
 
@@ -125,13 +129,27 @@ void App::StartMeasuring() {
   frames_measured_ = 0;
   is_measuring_ = true;
   measurement_manager_->StartMeasuring(gFramesToMeasure);
-  Surface::Instance().measuring_ = true;
 }
 
 void App::StopMeasuring() {
   measurement_manager_->StopMeasuring();
   is_measuring_ = false;
-  Surface::Instance().measuring_ = false;
+}
+
+bool App::IsMeasuring() const {
+  return is_measuring_;
+}
+
+u64 App::MeasuredFrameIndex() const {
+  return frames_measured_;
+}
+
+void App::StartImpl() {
+  ShaderManager::Instance().LoadShaders();
+  renderer_ = std::make_unique<Renderer>();
+  measurement_manager_ = std::make_unique<MeasurementManager>();
+  renderer_->Initialize();
+  ui_ = std::make_unique<Ui>(window_, renderer_.get());
 }
 
 } // namespace rc

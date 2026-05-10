@@ -16,6 +16,7 @@ uniform float proximity_epsilon;
 uniform int cascade_index;
 uniform bool base_level;
 uniform float overlap;
+uniform float angle_start;
 
 // Textures
 uniform sampler2D color_texture;
@@ -32,17 +33,19 @@ bool out_of_bounds(vec2 sample_uv) {
 
 void main() {
     vec4 this_pixel_color = texture(color_texture, uv);
-    vec2 coord = floor(uv * resolution);
+    vec2 coord = floor(uv * resolution); // Example (125, 250)
 
-    float spacing_base = sqrt(base_ray_count);
-    float spacing = pow(spacing_base, cascade_index);
+    float spacing_base = sqrt(base_ray_count); // 2
+    float spacing = pow(spacing_base, cascade_index); // 32, 16, 8, 4, 2, 1
 
-    vec2 probes_per_dimension = resolution / spacing;
-    vec2 probe_coord = mod(coord, probes_per_dimension);
-    vec2 probe_center = (probe_coord + 0.5) * spacing;
-    vec2 probe_uv = probe_center / resolution;
+    // (768x768)
+    vec2 probes_per_dimension = resolution / spacing; // 24, 48, 96, 192, 384, 768
+    vec2 probe_coord = mod(coord, probes_per_dimension); // (5, 10) | (29, 10) | (29, 58) | (125, 58) | (125, 250) | (125, 250)
+    vec2 probe_center = (probe_coord + 0.5) * spacing; // (176, 336) | (472, 168) | (236, 468) | (502, 234) | (251, 501) | (125.5, 250.5)
+    vec2 probe_uv = probe_center / resolution; // (0.2291, 0.4375) | (0.6146, 0.2186) | (0.3073, 0.6094)
 
     float interval_start = base_level ? 0.0 : (pow(base_ray_count, (cascade_index - 1)) / resolution.x); // !
+    //0.04166,
     float interval_end = ((
         (1.0 + 3.0 * overlap) * pow(base_ray_count, cascade_index) - pow(cascade_index, 2.0)
         ) / resolution.x); // !
@@ -50,17 +53,18 @@ void main() {
 
     // Multiply by base_ray_count to further subdivide.
     // This trick spreads out the underlying indices.
-    float ray_count = pow(base_ray_count, cascade_index + 1.0);
+    float ray_count = pow(base_ray_count, cascade_index + 1.0); // 4096, 1024, 256, 64, 16, 4
     float angle_step = whole / ray_count;
-    vec2 ray_id = floor(coord / probes_per_dimension);
+    vec2 ray_id = floor(coord / probes_per_dimension); // (5, 10), (2, 5), (1, 2), (0, 1), (0, 0), (0, 0)
     float base_ray_index = float(base_ray_count) * (ray_id.x + (spacing * ray_id.y));
+    // 960, 968, 772, 768, 4, 4
 
     vec4 radiance = vec4(0.0);
 
     for (float i = 0.0; i < base_ray_count; i += 1) {
         float index = base_ray_index + i;
         float angleStep = index + 0.5;
-        float angle = angle_step * angleStep;
+        float angle = angle_start + angle_step * angleStep;
         vec2 direction = vec2(cos(angle), -sin(angle));
 
         vec2 sample_uv = probe_uv + interval_start * direction;
@@ -93,8 +97,8 @@ void main() {
         }
 
         if (cascade_index + 1 != cascade_count && radiance_from_ray.a == 0.0) {
-            float upper_spacing = pow(spacing_base, cascade_index + 1.0);
-            vec2 upper_size = floor(resolution / upper_spacing);
+            float upper_spacing = pow(spacing_base, cascade_index + 1.0); // 64, 32, 16, 8, 4, 2
+            vec2 upper_size = floor(resolution / upper_spacing); // 12, 24, 48, 96, 192, 384
             vec2 upper_position = vec2(
                     mod(index, upper_spacing), floor(index / upper_spacing)
                 ) * upper_size;

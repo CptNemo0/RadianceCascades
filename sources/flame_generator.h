@@ -38,6 +38,21 @@ class FlameGenerator : public App::Observer {
       combined_rts_[0]->BindTexture(texture_slot);
     }
 
+    void Clear() {
+      render_target_combined_1_.Clear();
+      render_target_combined_2_.Clear();
+    }
+
+    void DrawPredefined() {
+      for (auto& pos : positions_) {
+        pos.x = -1.0f;
+      }
+
+      positions_[0] = {gScreenWidth / 2.0f, gScreenHeight / 2.0f};
+      flame_size_ = 40;
+      next_index_ = 1;
+    };
+
   private:
     friend class Ui;
 

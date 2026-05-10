@@ -80,6 +80,9 @@ void Ui::Render() {
   if (ImGui::Button("Draw Predefined")) {
     renderer_->canvas()->ClearCanvas();
     renderer_->canvas()->DrawPredefined();
+    renderer_->flame_generator_->Clear();
+    renderer_->flame_generator_->DrawPredefined();
+    flame_generator_->turned_on_ = true;
   }
 
   if (ImGui::ColorEdit3("Brush color",
@@ -238,7 +241,7 @@ void Ui::Render() {
 
     if (ImGui::SliderInt("Ray count",
                          &renderer_->global_illumination_params_.ray_count, 1,
-                         64)) {
+                         512)) {
       renderer_->global_illumination_params_.dirty = true;
       renderer_->global_illumination_params_.one_over_ray_count =
         1.0f / renderer_->global_illumination_params_.ray_count;

@@ -2,6 +2,7 @@
 
 #include "glad/include/glad/glad.h"
 
+#include "app.h"
 #include "constants.h"
 
 namespace rc {
@@ -27,7 +28,7 @@ void Surface::Draw() {
   glBindVertexArray(vao_);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
-  if (measuring_) {
+  if (App::Instance().IsMeasuring()) {
     glFinish();
   }
 }

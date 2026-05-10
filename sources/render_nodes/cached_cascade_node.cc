@@ -4,11 +4,13 @@
 #include "glm/fwd.hpp"
 
 #include <algorithm>
+#include <format>
 #include <initializer_list>
 #include <memory>
 #include <string_view>
 
 #include "constants.h"
+#include "image_write.h"
 #include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
@@ -72,6 +74,13 @@ void CachedCascadesNode::Forward() {
       render_targets_[i + 1]->BindTexture(GL_TEXTURE2);
     }
     rc::Surface::Instance().Draw();
+  }
+
+  if (App::Instance().IsMeasuring()) {
+    render_targets_[0]->Bind();
+    SaveFramebufferToPng(
+      std::format("cc\\{}.png", App::Instance().MeasuredFrameIndex()),
+      gScreenWidth, gScreenHeight);
   }
 
   ++internal_frame_counter;

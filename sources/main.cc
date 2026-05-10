@@ -2,6 +2,17 @@
 #define GLFW_INCLUDE_NONE
 #endif // !GLFW_INCLUDE_NONE
 
+#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#endif // !STB_IMAGE_WRITE_IMPLEMENTATION
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wdouble-promotion"
+#include "stb_image_write.h"
+#pragma clang diagnostic pop
+
 #include "glad/include/glad/glad.h"
 #include <GLFW/glfw3.h>
 

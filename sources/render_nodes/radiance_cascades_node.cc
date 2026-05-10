@@ -1,14 +1,17 @@
 #include "render_nodes/radiance_cascades_node.h"
 
+#include "app.h"
 #include "glad/include/glad/glad.h"
 #include "glm/fwd.hpp"
 
+#include <format>
 #include <initializer_list>
 #include <memory>
 #include <string_view>
 #include <utility>
 
 #include "constants.h"
+#include "image_write.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 #include "shader.h"
@@ -68,6 +71,13 @@ void RadianceCascadesNode::Forward() {
     render_targets_[1]->BindTexture(GL_TEXTURE2);
     rc::Surface::Instance().Draw();
     std::swap(render_targets_[0], render_targets_[1]);
+  }
+
+  if (App::Instance().IsMeasuring()) {
+    render_targets_[1]->Bind();
+    SaveFramebufferToPng(
+      std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
+      gScreenWidth, gScreenHeight);
   }
 }
 

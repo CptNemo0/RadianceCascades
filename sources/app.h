@@ -42,7 +42,7 @@ class App {
     App(App&&) = delete;
     void operator=(App&&) = delete;
 
-    ~App();
+    virtual ~App();
 
     void Start();
 
@@ -80,12 +80,18 @@ class App {
 
     void StopMeasuring();
 
+    bool IsMeasuring() const;
+
+    u64 MeasuredFrameIndex() const;
+
     float GetTime() const {
-      return glfwGetTime();
+      return time_;
     }
 
   private:
     friend class Ui;
+
+    virtual void StartImpl();
 
     App();
 
