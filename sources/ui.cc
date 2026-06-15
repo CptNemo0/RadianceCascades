@@ -1,17 +1,17 @@
 #include "ui.h"
 
-#include <cstddef>
+#include <GLFW/glfw3.h>
 
+#include <cstddef>
+#include <format>
+
+#include "aliasing.h"
 #include "app.h"
+#include "constants.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui/imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include <GLFW/glfw3.h>
-#include <format>
-
-#include "aliasing.h"
-#include "constants.h"
 #include "renderer.h"
 #include "shader_manager.h"
 
@@ -21,12 +21,12 @@ namespace {
 const char* gModeStrings[] = {"Global illumination", "Radiance cascades",
                               "Cached cascades", "Comparison"};
 
-} // namespace
+}  // namespace
 
 namespace rc {
 
 Ui::Ui(GLFWwindow* window, Renderer* renderer)
-  : renderer_(renderer), flame_generator_(renderer->flame_generator_.get()) {
+    : renderer_(renderer), flame_generator_(renderer->flame_generator_.get()) {
   // 1. Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -53,7 +53,7 @@ void Ui::Render() {
   ImGui::Begin("Renderer Settings");
 
   ImGui::Text(
-    "DRAW with RIGHT mouse button.\nCHANGE SETTINGS with LEFT mouse button.");
+      "DRAW with RIGHT mouse button.\nCHANGE SETTINGS with LEFT mouse button.");
   ImGui::Separator();
 
   ImGui::Text("Performance: %.3f ms/frame (%.1f FPS)",
@@ -73,6 +73,9 @@ void Ui::Render() {
     ImGui::Text("Measuring...");
   }
 
+  if (ImGui::Checkbox("Save frames", &App::Instance().should_save_)) {
+  };
+
   if (ImGui::Button("Clear")) {
     renderer_->canvas()->ClearCanvas();
   }
@@ -89,8 +92,8 @@ void Ui::Render() {
                         glm::value_ptr(renderer_->canvas_->brush_color_))) {
     renderer_->canvas_->first_ = true;
     ShaderManager::Instance()
-      .Use(ShaderManager::ShaderType::kCanvas)
-      ->SetVec3("brush_color", renderer_->canvas_->brush_color_);
+        .Use(ShaderManager::ShaderType::kCanvas)
+        ->SetVec3("brush_color", renderer_->canvas_->brush_color_);
   }
 
   if (flame_generator_->register_) {
@@ -101,10 +104,10 @@ void Ui::Render() {
                            0.0f, rc::gMaxBrushRadius)) {
       renderer_->canvas_->first_ = true;
       ShaderManager::Instance()
-        .Use(ShaderManager::ShaderType::kCanvas)
-        ->SetFloat("brush_radius", renderer_->canvas_->brush_radius_ *
-                                     renderer_->canvas_->brush_radius_ *
-                                     gBrushScale * gBrushScale);
+          .Use(ShaderManager::ShaderType::kCanvas)
+          ->SetFloat("brush_radius", renderer_->canvas_->brush_radius_ *
+                                         renderer_->canvas_->brush_radius_ *
+                                         gBrushScale * gBrushScale);
     }
   }
 
@@ -130,8 +133,8 @@ void Ui::Render() {
     renderer_->canvas()->first_ = true;
     flame_generator_->eraser_ = renderer_->canvas()->eraser_;
     ShaderManager::Instance()
-      .Use(ShaderManager::ShaderType::kCanvas)
-      ->SetBool("eraser", renderer_->canvas_->eraser_);
+        .Use(ShaderManager::ShaderType::kCanvas)
+        ->SetBool("eraser", renderer_->canvas_->eraser_);
   }
 
   int current_mode_index = static_cast<int>(renderer_->mode_);
@@ -161,7 +164,7 @@ void Ui::Render() {
     }
 
     if (ImGui::SliderInt("Base rays count",
-                         &renderer_->cascades_params_.base_ray_count, 4, 64)) {
+                         &renderer_->cascades_params_.base_ray_count, 1, 64)) {
       renderer_->cascades_params_.dirty = true;
     }
 
@@ -171,7 +174,7 @@ void Ui::Render() {
     }
 
     if (ImGui::SliderFloat("Ray overlap", &renderer_->cascades_params_.overlap,
-                           0.0f, 2.0f, "%.2f")) {
+                           -10.0f, 10.0f, "%.2f")) {
       renderer_->cascades_params_.dirty = true;
     }
   };
@@ -221,62 +224,63 @@ void Ui::Render() {
   static float remap = 1.0;
 
   switch (renderer_->mode_) {
-  case Renderer::Mode::kGi:
-    if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
-                         renderer_->gi_pipeline_.size() - 1)) {
-    }
+    case Renderer::Mode::kGi:
+      if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
+                           renderer_->gi_pipeline_.size() - 1)) {
+      }
 
-    if (ImGui::SliderInt("Step count",
-                         &renderer_->global_illumination_params_.step_count, 1,
-                         64)) {
-      renderer_->global_illumination_params_.dirty = true;
-    }
+      if (ImGui::SliderInt("Step count",
+                           &renderer_->global_illumination_params_.step_count,
+                           1, 64)) {
+        renderer_->global_illumination_params_.dirty = true;
+      }
 
-    if (ImGui::SliderFloat(
-          "Proximity threshold",
-          &renderer_->global_illumination_params_.proximity_epsilon, 0.00001f,
-          0.005f, "%.5f")) {
-      renderer_->global_illumination_params_.dirty = true;
-    }
+      if (ImGui::SliderFloat(
+              "Proximity threshold",
+              &renderer_->global_illumination_params_.proximity_epsilon,
+              0.00001f, 0.005f, "%.5f")) {
+        renderer_->global_illumination_params_.dirty = true;
+      }
 
-    if (ImGui::SliderInt("Ray count",
-                         &renderer_->global_illumination_params_.ray_count, 1,
-                         512)) {
-      renderer_->global_illumination_params_.dirty = true;
-      renderer_->global_illumination_params_.one_over_ray_count =
-        1.0f / renderer_->global_illumination_params_.ray_count;
-      renderer_->global_illumination_params_.angle_step =
-        static_cast<float>(std::numbers::pi) * 2.0f *
-        renderer_->global_illumination_params_.one_over_ray_count;
-    }
+      if (ImGui::SliderInt("Ray count",
+                           &renderer_->global_illumination_params_.ray_count, 1,
+                           512)) {
+        renderer_->global_illumination_params_.dirty = true;
+        renderer_->global_illumination_params_.one_over_ray_count =
+            1.0f / renderer_->global_illumination_params_.ray_count;
+        renderer_->global_illumination_params_.angle_step =
+            static_cast<float>(std::numbers::pi) * 2.0f *
+            renderer_->global_illumination_params_.one_over_ray_count;
+      }
 
-    if (ImGui::SliderFloat("Noise amount",
-                           &renderer_->global_illumination_params_.noise_amount,
-                           0.0f, 1.0f, "%.2f")) {
-      renderer_->global_illumination_params_.dirty = true;
-    }
-    break;
+      if (ImGui::SliderFloat(
+              "Noise amount",
+              &renderer_->global_illumination_params_.noise_amount, 0.0f, 1.0f,
+              "%.2f")) {
+        renderer_->global_illumination_params_.dirty = true;
+      }
+      break;
 
-  case Renderer::Mode::kRc:
-    core_mode();
-    break;
-  case Renderer::Mode::kCachedRc:
-    core_mode();
-    cache_mode();
-    break;
-  case rc::Renderer::Mode::kComparison:
-    core_mode();
-    cache_mode();
+    case Renderer::Mode::kRc:
+      core_mode();
+      break;
+    case Renderer::Mode::kCachedRc:
+      core_mode();
+      cache_mode();
+      break;
+    case rc::Renderer::Mode::kComparison:
+      core_mode();
+      cache_mode();
 
-    if (ImGui::SliderFloat("Range", &remap, 0.0f, 1.0f)) {
-      ShaderManager::Instance()
-        .Use(ShaderManager::ShaderType::kCompare)
-        ->SetFloat("remap", remap);
-    }
+      if (ImGui::SliderFloat("Range", &remap, 0.0f, 1.0f)) {
+        ShaderManager::Instance()
+            .Use(ShaderManager::ShaderType::kCompare)
+            ->SetFloat("remap", remap);
+      }
 
-    break;
-  case Renderer::Mode::kModeNumber:
-    break;
+      break;
+    case Renderer::Mode::kModeNumber:
+      break;
   }
 
   ImGui::End();
@@ -284,4 +288,4 @@ void Ui::Render() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-} // namespace rc
+}  // namespace rc

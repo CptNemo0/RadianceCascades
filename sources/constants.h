@@ -1,11 +1,12 @@
 #ifndef RC_CONSTANTS_H_
 #define RC_CONSTANTS_H_
 
-#include "aliasing.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <string_view>
+
+#include "aliasing.h"
 
 namespace rc {
 inline constexpr std::string_view gWindowName = "Radiance Cascades";
@@ -22,13 +23,13 @@ inline constexpr float gOneOverHeight = 1.0f / gScreenHeight;
 // std::log2 will be constexpr in C++26. Imagine not making it constexpr out of
 // the box. Typical C++ L.
 inline const u64 gJfaSteps =
-  std::ceil(std::log2(std::max(gScreenHeight, gScreenWidth)));
+    std::ceil(std::log2(std::max(gScreenHeight, gScreenWidth)));
 
 inline constexpr u64 gMaxBrushRadius = 50;
 
 inline const f32 gBrushScale =
-  1.0f /
-  std::sqrtf((gScreenWidth * gScreenWidth) + (gScreenHeight * gScreenHeight));
+    1.0f /
+    std::sqrtf((gScreenWidth * gScreenWidth) + (gScreenHeight * gScreenHeight));
 
 // 10% of the screen
 inline constexpr f32 gMaxFlameSize = 0.6;
@@ -40,18 +41,18 @@ inline constexpr u64 gFramesToMeasure = 512;
 // Full-screen quad vertices:
 // Positions (x, y, z) | Texture Coords (u, v)
 inline constexpr std::array<f32, 30> full_screen_quad_vertices = {
-  -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,
+    -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,
 
-  -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
 
-  1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
 
-  -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,
+    -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,
 
-  1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
 
-  1.0f,  1.0f,  0.0f, 1.0f, 1.0f};
+    1.0f,  1.0f,  0.0f, 1.0f, 1.0f};
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_CONSTANTS_H_
+#endif  // !RC_CONSTANTS_H_

@@ -46,6 +46,12 @@ void main() {
         ) / resolution.x); // !
     float interval_length = interval_end - interval_start;
 
+    float base_cascade_length = 2 / resolution.x;
+    interval_start = (pow(2.0, cascade_index - 1.0)) * base_cascade_length;
+    interval_end = (pow(2.0, cascade_index) * base_cascade_length) * (1.0 + overlap);
+
+    interval_length = (interval_end - interval_start);
+
     // Multiply by base_ray_count to further subdivide.
     // This trick spreads out the underlying indices.
     float ray_count = pow(base_ray_count, cascade_index + 1.0); // 4096, 1024, 256, 64, 16, 4

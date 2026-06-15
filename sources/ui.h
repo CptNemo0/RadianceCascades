@@ -9,16 +9,16 @@ class Renderer;
 class FlameGenerator;
 
 class Ui {
-  public:
-    explicit Ui(GLFWwindow* window, Renderer* renderer);
-    ~Ui();
-    void Render();
+ public:
+  explicit Ui(GLFWwindow* window, Renderer* renderer);
+  ~Ui();
+  void Render();
 
-  private:
-    Renderer* renderer_;
-    FlameGenerator* flame_generator_;
+ private:
+  Renderer* renderer_;
+  FlameGenerator* flame_generator_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_UI_H_
+#endif  // !RC_UI_H_

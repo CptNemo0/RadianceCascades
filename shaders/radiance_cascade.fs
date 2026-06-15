@@ -1,7 +1,5 @@
 #version 430
-
 out vec4 color_;
-
 in vec2 uv;
 
 // Const
@@ -39,11 +37,18 @@ void main() {
     vec2 probe_center = (probe_coord + 0.5) * spacing;
     vec2 probe_uv = probe_center / resolution;
 
-    float interval_start = base_level ? 0.0 : (pow(base_ray_count, (cascade_index - 1)) / resolution.x); // !
-    float interval_end = ((
-        (1.0 + 3.0 * overlap) * pow(base_ray_count, cascade_index) - pow(cascade_index, 2.0)
-        ) / resolution.x); // !
-    float interval_length = interval_end - interval_start;
+    float base_cascade_length = 5;
+    float interval_start = (pow(2.0, cascade_count) - 1.0) * base_cascade_length;
+    float interval_end = pow(2.0, cascade_count) * base_cascade_length;
+
+    float interval_length = (interval_end - interval_start) / resolution.x;
+
+    // float interval_start = base_level ? 0.0 : (pow(base_ray_count, (cascade_index - 1)) / resolution.x); // !
+    // float interval_end = ((
+    //     (1.0 + 3.0 * overlap) * pow(base_ray_count, cascade_index) - pow(cascade_index, 2.0)
+    //     ) / resolution.x); // !
+
+    // float interval_length = 5 * (cascade_index + 1);
 
     float step_size = proximity_epsilon * 5;
 
@@ -58,8 +63,7 @@ void main() {
 
     for (float i = 0.0; i < base_ray_count; i += 1) {
         float index = base_ray_index + i;
-        float angleStep = index + 0.5;
-        float angle = angle_step * angleStep;
+        float angle = angle_step * index + 0.5;
         vec2 direction = vec2(cos(angle), -sin(angle));
 
         vec2 sample_uv = probe_uv + interval_start * direction;

@@ -1,13 +1,12 @@
 #ifndef RC_RENDER_NODES_JFA_NODE_H_
 #define RC_RENDER_NODES_JFA_NODE_H_
 
-#include "render_nodes/render_node.h"
-
 #include <array>
 #include <memory>
 #include <string_view>
 
 #include "aliasing.h"
+#include "render_nodes/render_node.h"
 #include "render_target.h"
 
 namespace rc {
@@ -17,21 +16,21 @@ namespace rc {
 // picture where each pixel with non-zero alpha has components r and g
 // substituted with uv value.
 class JfaNode : public RenderNode {
-  public:
-    explicit JfaNode(std::string_view name, RenderNode* initializer_node);
+ public:
+  explicit JfaNode(std::string_view name, RenderNode* initializer_node);
 
-    virtual void Forward() override;
+  virtual void Forward() override;
 
-    virtual void BindOutput(int texture_slot) const override;
+  virtual void BindOutput(int texture_slot) const override;
 
-  private:
-    void Initialize();
+ private:
+  void Initialize();
 
-    std::unique_ptr<rc::RenderTarget> render_target_1;
-    std::unique_ptr<rc::RenderTarget> render_target_2;
-    std::array<rc::RenderTarget*, 2> render_targets_;
+  std::unique_ptr<rc::RenderTarget> render_target_1;
+  std::unique_ptr<rc::RenderTarget> render_target_2;
+  std::array<rc::RenderTarget*, 2> render_targets_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_RENDER_NODES_JFA_NODE_H_
+#endif  // !RC_RENDER_NODES_JFA_NODE_H_

@@ -1,7 +1,4 @@
-#include "cached_cascades_node.h"
-
 #include "glad/include/glad/glad.h"
-#include "glm/fwd.hpp"
 
 #include <algorithm>
 #include <format>
@@ -9,7 +6,9 @@
 #include <memory>
 #include <string_view>
 
+#include "cached_cascades_node.h"
 #include "constants.h"
+#include "glm/fwd.hpp"
 #include "image_write.h"
 #include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
@@ -22,13 +21,14 @@
 namespace rc {
 
 CachedCascadesNode::CachedCascadesNode(
-  std::string_view name, Parameters& parameters,
-  std::initializer_list<RenderNode*> inputs)
-  : RenderNode(name, inputs), parameters_(parameters),
-    cascade_count_(parameters.cascade_count) {
-
+    std::string_view name,
+    Parameters& parameters,
+    std::initializer_list<RenderNode*> inputs)
+    : RenderNode(name, inputs),
+      parameters_(parameters),
+      cascade_count_(parameters.cascade_count) {
   const rc::Shader* shader_rc =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
   shader_rc->SetVec2("resolution",
                      glm::vec2(static_cast<float>(rc::gScreenWidth),
                                static_cast<float>(rc::gScreenHeight)));
@@ -37,7 +37,7 @@ CachedCascadesNode::CachedCascadesNode(
   shader_rc->SetInt("upper_cascade_texture", 2);
 
   const rc::Shader* shader_rc_sdf =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
   shader_rc_sdf->SetVec2("resolution",
                          glm::vec2(static_cast<float>(rc::gScreenWidth),
                                    static_cast<float>(rc::gScreenHeight)));
@@ -55,8 +55,8 @@ CachedCascadesNode::CachedCascadesNode(
 void CachedCascadesNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   const Shader* shader = ShaderManager::Instance().Use(
-    parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
-                        : ShaderManager::ShaderType::kRc);
+      parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
+                          : ShaderManager::ShaderType::kRc);
   UpdateUniforms();
   BindInputs();
 
@@ -78,9 +78,11 @@ void CachedCascadesNode::Forward() {
 
   if (App::Instance().IsMeasuring()) {
     render_targets_[0]->Bind();
-    SaveFramebufferToPng(
-      std::format("cc\\{}.png", App::Instance().MeasuredFrameIndex()),
-      gScreenWidth, gScreenHeight);
+    if (App::Instance().ShouldSaveFrame()) {
+      SaveFramebufferToPng(
+          std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
+          gScreenWidth, gScreenHeight);
+    }
   }
 
   ++internal_frame_counter;
@@ -91,8 +93,8 @@ void CachedCascadesNode::UpdateUniforms() {
     return;
   }
   const rc::Shader* shader_rc = ShaderManager::Instance().Use(
-    parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
-                        : ShaderManager::ShaderType::kRc);
+      parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
+                          : ShaderManager::ShaderType::kRc);
   shader_rc->SetFloat("base_ray_count", parameters_.base_ray_count);
   shader_rc->SetFloat("cascade_count", parameters_.cascade_count);
   shader_rc->SetFloat("overlap", parameters_.overlap);
@@ -101,4 +103,4 @@ void CachedCascadesNode::UpdateUniforms() {
   parameters_.dirty = false;
 }
 
-} // namespace rc
+}  // namespace rc

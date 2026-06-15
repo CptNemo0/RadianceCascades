@@ -1,33 +1,33 @@
 #ifndef RC_RENDER_NODES_FIRE_NODE_H_
 #define RC_RENDER_NODES_FIRE_NODE_H_
 
-#include "glm/fwd.hpp"
-
 #include <memory>
 #include <string_view>
 
 #include "flame_generator.h"
+#include "glm/fwd.hpp"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 
 namespace rc {
 
 class FireNode : public RenderNode {
-  public:
-    FireNode(std::string_view name, FlameGenerator& flame_generator,
-             RenderNode* input);
+ public:
+  FireNode(std::string_view name,
+           FlameGenerator& flame_generator,
+           RenderNode* input);
 
-    virtual void Forward() override;
+  virtual void Forward() override;
 
-    virtual void BindOutput(int texture_slot) const override {
-      output_texture_->BindTexture(texture_slot);
-    }
+  virtual void BindOutput(int texture_slot) const override {
+    output_texture_->BindTexture(texture_slot);
+  }
 
-  private:
-    FlameGenerator& flame_generator_;
-    std::unique_ptr<RenderTarget> output_texture_;
+ private:
+  FlameGenerator& flame_generator_;
+  std::unique_ptr<RenderTarget> output_texture_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_RENDER_NODES_FIRE_NODE_H_
+#endif  // !RC_RENDER_NODES_FIRE_NODE_H_

@@ -34,7 +34,7 @@ void MeasurementManager::AddObserver(MeasurementAggregator* aggregator) {
 
 void MeasurementManager::RemoveObserver(MeasurementAggregator* aggregator) {
   if (auto search =
-        std::find(aggregators_.begin(), aggregators_.end(), aggregator);
+          std::find(aggregators_.begin(), aggregators_.end(), aggregator);
       search != aggregators_.end()) {
     aggregators_.erase(search);
   }
@@ -47,12 +47,10 @@ void MeasurementManager::SaveResults() const {
   }
 
   std::string path = std::format(
-    "Measurement_{}",
-    std::chrono::current_zone()->to_local(std::chrono::system_clock::now()));
+      "Measurement_{}",
+      std::chrono::current_zone()->to_local(std::chrono::system_clock::now()));
   path.erase(remove_if(path.begin(), path.end(),
-                       [](char c) {
-                         return c == ' ' || c == '.' || c == ':';
-                       }),
+                       [](char c) { return c == ' ' || c == '.' || c == ':'; }),
              path.end());
   path += ".stats";
   std::ofstream output_file(path);
@@ -60,4 +58,4 @@ void MeasurementManager::SaveResults() const {
   output_file.close();
 }
 
-}; // namespace rc
+};  // namespace rc

@@ -1,5 +1,4 @@
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#pragma GCC system_header
 #ifndef __khrplatform_h_
 #define __khrplatform_h_
 
@@ -142,7 +141,7 @@
 /*-------------------------------------------------------------------------
  * basic type definitions
  *-----------------------------------------------------------------------*/
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) ||              \
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
     defined(__GNUC__) || defined(__SCO__) || defined(__USLC__)
 
 /*
@@ -310,4 +309,3 @@ typedef enum {
 } khronos_boolean_enum_t;
 
 #endif /* __khrplatform_h_ */
-#pragma clang diagnostic pop

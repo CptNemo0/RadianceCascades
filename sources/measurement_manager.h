@@ -9,18 +9,18 @@ namespace rc {
 class MeasurementAggregator;
 
 class MeasurementManager {
-  public:
-    void StartMeasuring(i64 frame_count);
-    void StopMeasuring();
-    void SaveResults() const;
+ public:
+  void StartMeasuring(i64 frame_count);
+  void StopMeasuring();
+  void SaveResults() const;
 
-    void AddObserver(MeasurementAggregator* aggregator);
-    void RemoveObserver(MeasurementAggregator* aggregator);
+  void AddObserver(MeasurementAggregator* aggregator);
+  void RemoveObserver(MeasurementAggregator* aggregator);
 
-  private:
-    std::vector<MeasurementAggregator*> aggregators_;
+ private:
+  std::vector<MeasurementAggregator*> aggregators_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif //! MEASUREMENT_MANAGER_H_
+#endif  //! MEASUREMENT_MANAGER_H_

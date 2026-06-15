@@ -17,45 +17,43 @@ namespace rc {
 class Ui;
 
 class Renderer {
-  public:
-    enum class Mode {
-      kGi = 0,
-      kRc = 1,
-      kCachedRc = 2,
-      kComparison = 3,
-      kModeNumber
-    };
+ public:
+  enum class Mode {
+    kGi = 0,
+    kRc = 1,
+    kCachedRc = 2,
+    kComparison = 3,
+    kModeNumber
+  };
 
-    Renderer();
+  Renderer();
 
-    void Initialize();
+  void Initialize();
 
-    void Render();
+  void Render();
 
-    Canvas* canvas() {
-      return canvas_.get();
-    }
+  Canvas* canvas() { return canvas_.get(); }
 
-  private:
-    friend class Ui;
+ private:
+  friend class Ui;
 
-    Mode mode_ = Mode::kRc;
-    i32 stage_to_render_;
+  Mode mode_ = Mode::kRc;
+  i32 stage_to_render_;
 
-    std::unique_ptr<Canvas> canvas_;
-    std::unique_ptr<FlameGenerator> flame_generator_;
+  std::unique_ptr<Canvas> canvas_;
+  std::unique_ptr<FlameGenerator> flame_generator_;
 
-    std::vector<std::unique_ptr<RenderNode>> nodes_;
-    std::vector<RenderNode*> cascades_pipeline_;
-    std::vector<RenderNode*> gi_pipeline_;
-    std::vector<RenderNode*> cached_rc_pipeline_;
-    std::vector<RenderNode*> comparison_rc_pipeline_;
+  std::vector<std::unique_ptr<RenderNode>> nodes_;
+  std::vector<RenderNode*> cascades_pipeline_;
+  std::vector<RenderNode*> gi_pipeline_;
+  std::vector<RenderNode*> cached_rc_pipeline_;
+  std::vector<RenderNode*> comparison_rc_pipeline_;
 
-    GlobalIlluminationNode::Parameters global_illumination_params_;
-    RadianceCascadesNode::Parameters cascades_params_;
-    CachedCascadesNode::Parameters cached_params_;
+  GlobalIlluminationNode::Parameters global_illumination_params_;
+  RadianceCascadesNode::Parameters cascades_params_;
+  CachedCascadesNode::Parameters cached_params_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_RENDERER_H_
+#endif  // !RC_RENDERER_H_

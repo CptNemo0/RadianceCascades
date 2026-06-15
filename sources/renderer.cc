@@ -28,53 +28,56 @@
 namespace rc {
 
 Renderer::Renderer()
-  : canvas_(std::make_unique<Canvas>(rc::gScreenHeight, rc::gScreenHeight, 10)),
-    flame_generator_(std::make_unique<FlameGenerator>()) {
-}
+    : canvas_(
+          std::make_unique<Canvas>(rc::gScreenHeight, rc::gScreenHeight, 10)),
+      flame_generator_(std::make_unique<FlameGenerator>()) {}
 
 void Renderer::Initialize() {
   std::unique_ptr<rc::CanvasNode> canvas_node =
-    std::make_unique<rc::CanvasNode>("CanvasNode", *(canvas_.get()));
+      std::make_unique<rc::CanvasNode>("CanvasNode", *(canvas_.get()));
 
   std::unique_ptr<rc::FireNode> flame_node = std::make_unique<rc::FireNode>(
-    "FireNode", *(flame_generator_.get()), canvas_node.get());
+      "FireNode", *(flame_generator_.get()), canvas_node.get());
 
   std::unique_ptr<rc::CopyNode> uv_colorspace_node =
-    std::make_unique<rc::CopyNode>(
-      "UVColorspaceNode", rc::ShaderManager::ShaderType::kUvColorspace,
-      std::initializer_list<rc::RenderNode*>{flame_node.get()}, GL_RG32F, GL_RG,
-      GL_FLOAT);
+      std::make_unique<rc::CopyNode>(
+          "UVColorspaceNode", rc::ShaderManager::ShaderType::kUvColorspace,
+          std::initializer_list<rc::RenderNode*>{flame_node.get()}, GL_RG32F,
+          GL_RG, GL_FLOAT);
 
   std::unique_ptr<rc::JfaNode> jfa_node =
-    std::make_unique<rc::JfaNode>("JFANode", uv_colorspace_node.get());
+      std::make_unique<rc::JfaNode>("JFANode", uv_colorspace_node.get());
 
   std::unique_ptr<rc::CopyNode> sdf_node = std::make_unique<rc::CopyNode>(
-    "SDFNode", rc::ShaderManager::ShaderType::kSdf,
-    std::initializer_list<rc::RenderNode*>{jfa_node.get()}, GL_R16F, GL_RED,
-    GL_FLOAT);
+      "SDFNode", rc::ShaderManager::ShaderType::kSdf,
+      std::initializer_list<rc::RenderNode*>{jfa_node.get()}, GL_R16F, GL_RED,
+      GL_FLOAT);
 
   std::unique_ptr<rc::GlobalIlluminationNode> gi_node =
-    std::make_unique<rc::GlobalIlluminationNode>(
-      "GlobalIlluminationNode", global_illumination_params_,
-      std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
+      std::make_unique<rc::GlobalIlluminationNode>(
+          "GlobalIlluminationNode", global_illumination_params_,
+          std::initializer_list<rc::RenderNode*>{flame_node.get(),
+                                                 sdf_node.get()});
 
   std::unique_ptr<rc::RadianceCascadesNode> rc_node =
-    std::make_unique<rc::RadianceCascadesNode>(
-      "RadianceCascadesNode", cascades_params_,
-      std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
+      std::make_unique<rc::RadianceCascadesNode>(
+          "RadianceCascadesNode", cascades_params_,
+          std::initializer_list<rc::RenderNode*>{flame_node.get(),
+                                                 sdf_node.get()});
 
   cached_params_.render_frequencies_.resize(cached_params_.cascade_count);
   std::ranges::fill(cached_params_.render_frequencies_, 1);
 
   std::unique_ptr<rc::CachedCascadesNode> cached_rc_node =
-    std::make_unique<rc::CachedCascadesNode>(
-      "CachedCascadesNode", cached_params_,
-      std::initializer_list<rc::RenderNode*>{flame_node.get(), sdf_node.get()});
+      std::make_unique<rc::CachedCascadesNode>(
+          "CachedCascadesNode", cached_params_,
+          std::initializer_list<rc::RenderNode*>{flame_node.get(),
+                                                 sdf_node.get()});
 
   std::unique_ptr<rc::ComparisonNode> comparison_node =
-    std::make_unique<rc::ComparisonNode>(
-      "ComparisonNode", std::initializer_list<rc::RenderNode*>{
-                          rc_node.get(), cached_rc_node.get()});
+      std::make_unique<rc::ComparisonNode>(
+          "ComparisonNode", std::initializer_list<rc::RenderNode*>{
+                                rc_node.get(), cached_rc_node.get()});
 
   cascades_pipeline_.push_back(canvas_node.get());
   cascades_pipeline_.push_back(flame_node.get());
@@ -122,16 +125,16 @@ void Renderer::Initialize() {
 void Renderer::Render() {
   std::vector<RenderNode*>& pipeline = [this]() -> std::vector<RenderNode*>& {
     switch (mode_) {
-    case Mode::kGi:
-      return gi_pipeline_;
-    case Mode::kRc:
-      return cascades_pipeline_;
-    case Mode::kCachedRc:
-      return cached_rc_pipeline_;
-    case Mode::kComparison:
-      return comparison_rc_pipeline_;
-    case Mode::kModeNumber:
-      return cascades_pipeline_;
+      case Mode::kGi:
+        return gi_pipeline_;
+      case Mode::kRc:
+        return cascades_pipeline_;
+      case Mode::kCachedRc:
+        return cached_rc_pipeline_;
+      case Mode::kComparison:
+        return comparison_rc_pipeline_;
+      case Mode::kModeNumber:
+        return cascades_pipeline_;
     }
   }();
 
@@ -152,8 +155,8 @@ void Renderer::Render() {
       return pipeline.back();
     }
   }()
-    ->BindOutput(GL_TEXTURE0);
+      ->BindOutput(GL_TEXTURE0);
   Surface::Instance().Draw();
 }
 
-} // namespace rc
+}  // namespace rc

@@ -19,33 +19,38 @@ namespace rc {
 // This node can also be used to draw to screen. To do that pass true to last
 // argument of a constructor.
 class CopyNode : public RenderNode {
-  public:
-    CopyNode(std::string_view name, std::initializer_list<RenderNode*> inputs,
-             RenderToScreen to_screen = false);
+ public:
+  CopyNode(std::string_view name,
+           std::initializer_list<RenderNode*> inputs,
+           RenderToScreen to_screen = false);
 
-    CopyNode(std::string_view name, ShaderType copy_shader,
-             std::initializer_list<RenderNode*> inputs,
-             RenderToScreen to_screen = false);
+  CopyNode(std::string_view name,
+           ShaderType copy_shader,
+           std::initializer_list<RenderNode*> inputs,
+           RenderToScreen to_screen = false);
 
-    CopyNode(std::string_view name, ShaderType copy_shader,
-             std::initializer_list<RenderNode*> inputs, i32 bits, i32 format,
-             i32 type);
+  CopyNode(std::string_view name,
+           ShaderType copy_shader,
+           std::initializer_list<RenderNode*> inputs,
+           i32 bits,
+           i32 format,
+           i32 type);
 
-    virtual void Forward() override;
+  virtual void Forward() override;
 
-    virtual void BindOutput(int texture_slot) const override {
-      output_->BindTexture(texture_slot);
-    }
+  virtual void BindOutput(int texture_slot) const override {
+    output_->BindTexture(texture_slot);
+  }
 
-  private:
-    // Stored shader variant. If no is passed to constructor a normal copy is
-    // performed.
-    ShaderType copy_shader_ = ShaderType::kSurface;
+ private:
+  // Stored shader variant. If no is passed to constructor a normal copy is
+  // performed.
+  ShaderType copy_shader_ = ShaderType::kSurface;
 
-    // If nullptr, the shader will draw to screen instead.
-    std::unique_ptr<RenderTarget> output_;
+  // If nullptr, the shader will draw to screen instead.
+  std::unique_ptr<RenderTarget> output_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_RENDER_NODES_COPY_NODE_H_
+#endif  // !RC_RENDER_NODES_COPY_NODE_H_

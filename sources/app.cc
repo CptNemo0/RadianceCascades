@@ -1,8 +1,7 @@
 #include "app.h"
 
-#include "aliasing.h"
 #include "glad/include/glad/glad.h"
-#include "glm/ext/vector_float2.hpp"
+
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
@@ -10,18 +9,18 @@
 #include <memory>
 #include <stdexcept>
 
+#include "aliasing.h"
 #include "constants.h"
+#include "glm/ext/vector_float2.hpp"
 #include "measurement_manager.h"
 #include "renderer.h"
 #include "shader_manager.h"
-#include "surface.h"
 #include "timed_scope.h"
 #include "ui.h"
 
 namespace rc {
 
-App::App() {
-}
+App::App() {}
 
 App::~App() {
   glfwTerminate();
@@ -152,4 +151,4 @@ void App::StartImpl() {
   ui_ = std::make_unique<Ui>(window_, renderer_.get());
 }
 
-} // namespace rc
+}  // namespace rc

@@ -1,10 +1,6 @@
 #include "utility.h"
 
 #include "glad/include/glad/glad.h"
-#include "glm/ext/quaternion_geometric.hpp"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
-#include "glm/glm.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -14,6 +10,10 @@
 #include <vector>
 
 #include "aliasing.h"
+#include "glm/ext/quaternion_geometric.hpp"
+#include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
+#include "glm/glm.hpp"
 #include "texture.h"
 
 // Those noises are vide coded, they work this is what matters in their case.
@@ -63,7 +63,10 @@ float ComputePerlin(float x, float y) {
                    Fade(sy));
 }
 
-float ComputeFBM(float x, float y, int octaves, float lacunarity,
+float ComputeFBM(float x,
+                 float y,
+                 int octaves,
+                 float lacunarity,
                  float persistence) {
   float total = 0.0f;
   float frequency = 1.0f;
@@ -80,7 +83,7 @@ float ComputeFBM(float x, float y, int octaves, float lacunarity,
   return total / max_value;
 }
 
-} // namespace
+}  // namespace
 
 namespace rc {
 
@@ -102,20 +105,17 @@ float Random(float min, float max) {
 }
 
 glm::vec2 RandomVec2(float min, float max) {
-  auto next = [&] {
-    return Random(min, max);
-  };
+  auto next = [&] { return Random(min, max); };
   return {next(), next()};
 }
 
 glm::vec3 RandomVec3(float min, float max) {
-  auto next = [&] {
-    return Random(min, max);
-  };
+  auto next = [&] { return Random(min, max); };
   return {next(), next(), next()};
 }
 
-std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width, u64 height,
+std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width,
+                                               u64 height,
                                                float scale) {
   std::vector<glm::vec4> data(width * height);
 
@@ -125,14 +125,14 @@ std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width, u64 height,
   for (u64 y = 0; y < height; ++y) {
     for (u64 x = 0; x < width; ++x) {
       const float color_value =
-        std::clamp((ComputePerlin(static_cast<float>(x) * width_scale,
-                                  static_cast<float>(y) * height_scale) +
-                    1.0f) *
-                     0.5f,
-                   0.0f, 1.0f);
+          std::clamp((ComputePerlin(static_cast<float>(x) * width_scale,
+                                    static_cast<float>(y) * height_scale) +
+                      1.0f) *
+                         0.5f,
+                     0.0f, 1.0f);
 
       data[y * width + x] =
-        glm::vec4(color_value, color_value, color_value, 1.0f);
+          glm::vec4(color_value, color_value, color_value, 1.0f);
     }
   }
 
@@ -140,7 +140,9 @@ std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width, u64 height,
                                    reinterpret_cast<void*>(data.data()));
 }
 
-std::unique_ptr<Texture> GetFBMTexture(u64 width, u64 height, int octaves,
+std::unique_ptr<Texture> GetFBMTexture(u64 width,
+                                       u64 height,
+                                       int octaves,
                                        float scale) {
   std::vector<float> data(width * height);
 
@@ -164,4 +166,4 @@ std::unique_ptr<Texture> GetFBMTexture(u64 width, u64 height, int octaves,
                                    GL_R16F, GL_RED, GL_FLOAT);
 }
 
-} // namespace rc
+}  // namespace rc

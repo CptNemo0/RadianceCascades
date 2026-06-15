@@ -2,6 +2,21 @@
 
 ![Project Screenshot](images/modes.png)
 
+### Building
+
+Requires a C++23 compiler (MinGW-w64 / GCC), CMake ≥ 4.0 and Ninja. The dependencies (GLFW, GLM) are fetched automatically by CMake. Build configurations are managed with CMake presets (`CMakePresets.json`):
+
+```sh
+cmake --preset release          # or: debug
+cmake --build --preset release
+./build/release/RadianceCascades.exe
+```
+
+- **release** — `-O3 -DNDEBUG`, output in `build/release/`
+- **debug** — `-O0 -g` plus libstdc++ assertions, stack protector and frame pointers, output in `build/debug/`
+
+The shaders are copied next to the executable automatically as a post-build step.
+
 ### Modes:
 
 - Classic Global Illumination

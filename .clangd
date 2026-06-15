@@ -1,9 +1,7 @@
 CompileFlags:
-  Add:
-  [
-    -std=c++23
-  ]
+  CompilationDatabase: build/debug
+  Add: [-std=c++23]
 
 Diagnostics:
   MissingIncludes: Strict
-  UnusedIncludes: Strict
+  #UnusedIncludes: Strict

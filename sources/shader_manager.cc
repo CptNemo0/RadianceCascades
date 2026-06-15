@@ -5,7 +5,6 @@
 #include <format>
 #include <fstream>
 #include <memory>
-#include <print>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -19,7 +18,7 @@ namespace {
 constexpr std::string_view vertex_extension = ".vs";
 constexpr std::string_view fragment_extension = ".fs";
 
-} // namespace
+}  // namespace
 
 namespace rc {
 
@@ -49,17 +48,17 @@ void ShaderManager::LoadShaders() {
     vertex_shader = std::format("{}{}", line, vertex_extension);
     fragment_shader = std::format("{}{}", line, fragment_extension);
     std::filesystem::path vertex_path =
-      shaders_list.parent_path() / vertex_shader;
+        shaders_list.parent_path() / vertex_shader;
     std::filesystem::path fragment_path =
-      shaders_list.parent_path() / fragment_shader;
+        shaders_list.parent_path() / fragment_shader;
     if (!std::filesystem::exists(vertex_path) ||
         !std::filesystem::exists(fragment_path)) {
       throw std::runtime_error(
-        std::format("Vertex or fragment {} shader does not exist", line));
+          std::format("Vertex or fragment {} shader does not exist", line));
     }
 
     shaders_[static_cast<u64>(shader_type)] =
-      std::make_unique<Shader>(vertex_path, fragment_path);
+        std::make_unique<Shader>(vertex_path, fragment_path);
   }
 }
 
@@ -81,4 +80,4 @@ const Shader* ShaderManager::Use(ShaderManager::ShaderType type) const {
   return return_value;
 }
 
-} // namespace rc
+}  // namespace rc

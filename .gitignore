@@ -4,6 +4,8 @@ build/
 build_commands.md
 codebook.toml
 compile_commands.json
+__cmake_systeminformation/
+/.claude
 
 *.annot
 *.cmo

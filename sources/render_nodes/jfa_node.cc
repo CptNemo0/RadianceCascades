@@ -19,12 +19,17 @@
 namespace rc {
 
 JfaNode::JfaNode(std::string_view name, RenderNode* initializer_node)
-  : RenderNode(name, {initializer_node}),
-    render_target_1(std::make_unique<RenderTarget>(
-      rc::gScreenWidth, rc::gScreenHeight, GL_RG32F, GL_RG, GL_FLOAT)),
-    render_target_2(std::make_unique<RenderTarget>(
-      rc::gScreenWidth, rc::gScreenHeight, GL_RG32F, GL_RG, GL_FLOAT)) {
-
+    : RenderNode(name, {initializer_node}),
+      render_target_1(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                     rc::gScreenHeight,
+                                                     GL_RG32F,
+                                                     GL_RG,
+                                                     GL_FLOAT)),
+      render_target_2(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                     rc::gScreenHeight,
+                                                     GL_RG32F,
+                                                     GL_RG,
+                                                     GL_FLOAT)) {
   const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
   jfa_shader->SetFloat("width", rc::gScreenWidth);
   jfa_shader->SetFloat("height", rc::gScreenHeight);
@@ -65,4 +70,4 @@ void JfaNode::Initialize() {
   render_targets_[1] = render_target_2.get();
 }
 
-} // namespace rc
+}  // namespace rc

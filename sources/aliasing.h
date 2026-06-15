@@ -20,6 +20,6 @@ using f64 = double;
 
 using RenderToScreen = bool;
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_ALIASING_H_
+#endif  // !RC_ALIASING_H_

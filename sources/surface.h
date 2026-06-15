@@ -6,28 +6,28 @@
 namespace rc {
 
 class Surface {
-  public:
-    static Surface& Instance() {
-      static Surface instance;
-      return instance;
-    }
+ public:
+  static Surface& Instance() {
+    static Surface instance;
+    return instance;
+  }
 
-    void Draw();
+  void Draw();
 
-    ~Surface();
+  ~Surface();
 
-    Surface(const Surface&) = delete;
-    void operator=(const Surface&) = delete;
+  Surface(const Surface&) = delete;
+  void operator=(const Surface&) = delete;
 
-    Surface(Surface&&) = delete;
-    void operator=(Surface&&) = delete;
+  Surface(Surface&&) = delete;
+  void operator=(Surface&&) = delete;
 
-  private:
-    Surface();
-    u32 vao_;
-    u32 vbo_;
+ private:
+  Surface();
+  u32 vao_;
+  u32 vbo_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_SURFACE_H_
+#endif  // !RC_SURFACE_H_

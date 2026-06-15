@@ -16,31 +16,31 @@ namespace rc {
 // All classes inheriting after RenderNode are supposed to interface easily with
 // each other by passing one's output to other's input.
 class RenderNode : public MeasurementAggregator {
-  public:
-    virtual ~RenderNode() = default;
+ public:
+  virtual ~RenderNode() = default;
 
-    // Performs rendering logic of the node.
-    virtual void Forward() = 0;
+  // Performs rendering logic of the node.
+  virtual void Forward() = 0;
 
-    // Binds render target's texture to the provided texture slot. Used by
-    // BindInputs.
-    virtual void BindOutput(int texture_slot) const = 0;
+  // Binds render target's texture to the provided texture slot. Used by
+  // BindInputs.
+  virtual void BindOutput(int texture_slot) const = 0;
 
-    // Binds  render target textures of all of the inputs to consecutive texture
-    // slots starting from GL_TEXTURE0.
-    void BindInputs() const;
+  // Binds  render target textures of all of the inputs to consecutive texture
+  // slots starting from GL_TEXTURE0.
+  void BindInputs() const;
 
-  protected:
-    using ShaderType = ShaderManager::ShaderType;
+ protected:
+  using ShaderType = ShaderManager::ShaderType;
 
-    RenderNode(std::string_view name, std::initializer_list<RenderNode*> inputs)
+  RenderNode(std::string_view name, std::initializer_list<RenderNode*> inputs)
       : MeasurementAggregator(name), inputs_(inputs) {};
 
-    // RenderTargets of those RenderNodes are going to be treated as input
-    // textures for the node.
-    std::vector<RenderNode*> inputs_{};
+  // RenderTargets of those RenderNodes are going to be treated as input
+  // textures for the node.
+  std::vector<RenderNode*> inputs_{};
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_RENDER_NODE_H_
+#endif  // !RC_RENDER_NODE_H_

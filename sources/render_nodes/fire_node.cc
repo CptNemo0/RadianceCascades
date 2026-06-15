@@ -1,13 +1,13 @@
 #include "render_nodes/fire_node.h"
 
 #include "glad/include/glad/glad.h"
-#include "glm/ext/vector_float2.hpp"
 
 #include <memory>
 #include <string_view>
 
 #include "constants.h"
 #include "flame_generator.h"
+#include "glm/ext/vector_float2.hpp"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 #include "shader.h"
@@ -17,18 +17,22 @@
 
 namespace rc {
 
-FireNode::FireNode(std::string_view name, FlameGenerator& flame_generator,
+FireNode::FireNode(std::string_view name,
+                   FlameGenerator& flame_generator,
                    RenderNode* input)
-  : RenderNode(name, {input}), flame_generator_(flame_generator),
-    output_texture_(std::make_unique<RenderTarget>(
-      gScreenHeight, gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)) {
-}
+    : RenderNode(name, {input}),
+      flame_generator_(flame_generator),
+      output_texture_(std::make_unique<RenderTarget>(gScreenHeight,
+                                                     gScreenHeight,
+                                                     GL_RGBA8,
+                                                     GL_RGBA,
+                                                     GL_UNSIGNED_BYTE)) {}
 
 void FireNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   flame_generator_.RenderFlames();
   const Shader* add_shader =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);
   add_shader->SetInt("texture_1", 0);
   add_shader->SetInt("texture_2", 1);
   add_shader->SetVec2("offset_1", glm::vec2(0.0f, 0.0f));
@@ -40,4 +44,4 @@ void FireNode::Forward() {
   Surface::Instance().Draw();
 }
 
-} // namespace rc
+}  // namespace rc

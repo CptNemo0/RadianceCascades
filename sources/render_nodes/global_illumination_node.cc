@@ -21,16 +21,22 @@
 namespace rc {
 
 GlobalIlluminationNode::GlobalIlluminationNode(
-  std::string_view name, GlobalIlluminationNode::Parameters& params,
-  std::initializer_list<RenderNode*> inputs)
-  : RenderNode(name, inputs), parameters_(params),
-    gi_render_target_(
-      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight,
-                                     GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)),
-    previous_frame_(std::make_unique<RenderTarget>(rc::gScreenWidth,
-                                                   rc::gScreenHeight, GL_RGBA8,
-                                                   GL_RGBA, GL_UNSIGNED_BYTE)),
-    noise_texture_(rc::GetNoiseTexture(rc::gScreenWidth, rc::gScreenHeight)) {
+    std::string_view name,
+    GlobalIlluminationNode::Parameters& params,
+    std::initializer_list<RenderNode*> inputs)
+    : RenderNode(name, inputs),
+      parameters_(params),
+      gi_render_target_(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                       rc::gScreenHeight,
+                                                       GL_RGBA8,
+                                                       GL_RGBA,
+                                                       GL_UNSIGNED_BYTE)),
+      previous_frame_(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                     rc::gScreenHeight,
+                                                     GL_RGBA8,
+                                                     GL_RGBA,
+                                                     GL_UNSIGNED_BYTE)),
+      noise_texture_(rc::GetNoiseTexture(rc::gScreenWidth, rc::gScreenHeight)) {
   const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
   // I know, this is not the perfect way to do this. But currently writing
   // parsing logic for this is the last thing on my mind.
@@ -66,9 +72,11 @@ void GlobalIlluminationNode::Forward() {
 
   if (App::Instance().IsMeasuring()) {
     previous_frame_->Bind();
-    SaveFramebufferToPng(
-      std::format("gi\\{}.png", App::Instance().MeasuredFrameIndex()),
-      gScreenWidth, gScreenHeight);
+    if (App::Instance().ShouldSaveFrame()) {
+      SaveFramebufferToPng(
+          std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
+          gScreenWidth, gScreenHeight);
+    }
   }
 }
 
@@ -85,4 +93,4 @@ void GlobalIlluminationNode::UpdateUniforms() {
   parameters_.dirty = false;
 }
 
-} // namespace rc
+}  // namespace rc

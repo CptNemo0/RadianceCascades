@@ -1,8 +1,6 @@
 #include "render_nodes/radiance_cascades_node.h"
 
-#include "app.h"
 #include "glad/include/glad/glad.h"
-#include "glm/fwd.hpp"
 
 #include <format>
 #include <initializer_list>
@@ -10,7 +8,9 @@
 #include <string_view>
 #include <utility>
 
+#include "app.h"
 #include "constants.h"
+#include "glm/fwd.hpp"
 #include "image_write.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
@@ -22,18 +22,24 @@
 namespace rc {
 
 RadianceCascadesNode::RadianceCascadesNode(
-  std::string_view name, RadianceCascadesNode::Parameters& params,
-  std::initializer_list<RenderNode*> inputs)
-  : RenderNode(name, inputs), parameters_(params),
-    render_target_1_(std::make_unique<RenderTarget>(rc::gScreenWidth,
-                                                    rc::gScreenHeight, GL_RGBA8,
-                                                    GL_RGBA, GL_UNSIGNED_BYTE)),
+    std::string_view name,
+    RadianceCascadesNode::Parameters& params,
+    std::initializer_list<RenderNode*> inputs)
+    : RenderNode(name, inputs),
+      parameters_(params),
+      render_target_1_(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                      rc::gScreenHeight,
+                                                      GL_RGBA8,
+                                                      GL_RGBA,
+                                                      GL_UNSIGNED_BYTE)),
 
-    render_target_2_(
-      std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight,
-                                     GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)) {
+      render_target_2_(std::make_unique<RenderTarget>(rc::gScreenWidth,
+                                                      rc::gScreenHeight,
+                                                      GL_RGBA8,
+                                                      GL_RGBA,
+                                                      GL_UNSIGNED_BYTE)) {
   const rc::Shader* shader_rc =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
   shader_rc->SetVec2("resolution",
                      glm::vec2(static_cast<float>(rc::gScreenWidth),
                                static_cast<float>(rc::gScreenHeight)));
@@ -42,7 +48,7 @@ RadianceCascadesNode::RadianceCascadesNode(
   shader_rc->SetInt("upper_cascade_texture", 2);
 
   const rc::Shader* shader_rc_sdf =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
   shader_rc_sdf->SetVec2("resolution",
                          glm::vec2(static_cast<float>(rc::gScreenWidth),
                                    static_cast<float>(rc::gScreenHeight)));
@@ -57,8 +63,8 @@ RadianceCascadesNode::RadianceCascadesNode(
 void RadianceCascadesNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   const Shader* shader = ShaderManager::Instance().Use(
-    parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
-                        : ShaderManager::ShaderType::kRc);
+      parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
+                          : ShaderManager::ShaderType::kRc);
   UpdateUniforms();
   BindInputs();
 
@@ -75,9 +81,11 @@ void RadianceCascadesNode::Forward() {
 
   if (App::Instance().IsMeasuring()) {
     render_targets_[1]->Bind();
-    SaveFramebufferToPng(
-      std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
-      gScreenWidth, gScreenHeight);
+    if (App::Instance().ShouldSaveFrame()) {
+      SaveFramebufferToPng(
+          std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
+          gScreenWidth, gScreenHeight);
+    }
   }
 }
 
@@ -86,8 +94,8 @@ void RadianceCascadesNode::UpdateUniforms() {
     return;
   }
   const rc::Shader* shader_rc = ShaderManager::Instance().Use(
-    parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
-                        : ShaderManager::ShaderType::kRc);
+      parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
+                          : ShaderManager::ShaderType::kRc);
   shader_rc->SetFloat("base_ray_count", parameters_.base_ray_count);
   shader_rc->SetFloat("cascade_count", parameters_.cascade_count);
   shader_rc->SetFloat("overlap", parameters_.overlap);
@@ -96,4 +104,4 @@ void RadianceCascadesNode::UpdateUniforms() {
   parameters_.dirty = false;
 }
 
-} // namespace rc
+}  // namespace rc

@@ -38,4 +38,4 @@ Surface::~Surface() {
   glDeleteBuffers(1, &vbo_);
 }
 
-} // namespace rc
+}  // namespace rc

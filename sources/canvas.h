@@ -1,18 +1,18 @@
 #ifndef RC_CANVAS_H_
 #define RC_CANVAS_H_
 
+#include "glad/include/glad/glad.h"
+
 #include <array>
 #include <chrono>
 #include <queue>
 #include <vector>
 
-#include "glad/include/glad/glad.h"
-#include "glm/fwd.hpp"
-#include "glm/glm.hpp"
-
 #include "aliasing.h"
 #include "app.h"
 #include "constants.h"
+#include "glm/fwd.hpp"
+#include "glm/glm.hpp"
 #include "render_target.h"
 #include "scoped_observation.h"
 #include "utility"
@@ -24,92 +24,88 @@ class Ui;
 
 // The main drawing class.
 class Canvas : public App::Observer {
-  public:
-    struct RandomPoint {
-        glm::vec2 position =
-          RandomVec2(20.0f, static_cast<float>(gScreenWidth) - 20.0f) *
-          glm::vec2(gOneOverWidth, gOneOverHeight);
-        float radius = Random(10.0f, 20.0f);
-        glm::vec3 color = RandomVec3(0.0f, 1.0f);
-    };
+ public:
+  struct RandomPoint {
+    glm::vec2 position =
+        RandomVec2(20.0f, static_cast<float>(gScreenWidth) - 20.0f) *
+        glm::vec2(gOneOverWidth, gOneOverHeight);
+    float radius = Random(10.0f, 20.0f);
+    glm::vec3 color = RandomVec3(0.0f, 1.0f);
+  };
 
-    Canvas(u64 height, u64 width, u64 brush_radius = 10,
-           glm::vec3 brush_color = {1.0f, 1.0f, 1.0f});
+  Canvas(u64 height,
+         u64 width,
+         u64 brush_radius = 10,
+         glm::vec3 brush_color = {1.0f, 1.0f, 1.0f});
 
-    u64 height() const {
-      return height_;
-    }
+  u64 height() const { return height_; }
 
-    u64 width() const {
-      return width_;
-    }
+  u64 width() const { return width_; }
 
-    u64 brush_radius() const {
-      return brush_radius_;
-    }
+  u64 brush_radius() const { return brush_radius_; }
 
-    virtual void GetMousePositionOnRMB(const glm::vec2& point) override;
+  virtual void GetMousePositionOnRMB(const glm::vec2& point) override;
 
-    void Draw();
+  void Draw();
 
-    void BindTexture(int texture_slot) {
-      render_targets_[0]->BindTexture(texture_slot);
-    }
+  void BindTexture(int texture_slot) {
+    render_targets_[0]->BindTexture(texture_slot);
+  }
 
-    void set_brush_color(glm::vec3 brush_color) {
-      first_ = true;
-      brush_color_ = brush_color;
-    }
+  void set_brush_color(glm::vec3 brush_color) {
+    first_ = true;
+    brush_color_ = brush_color;
+  }
 
-    void set_brush_radius(float radius) {
-      first_ = true;
-      brush_radius_ = radius;
-    }
+  void set_brush_radius(float radius) {
+    first_ = true;
+    brush_radius_ = radius;
+  }
 
-    void ClearCanvas() {
-      render_targets_[0]->Bind();
-      render_targets_[0]->Clear();
-      render_targets_[1]->Bind();
-      render_targets_[1]->Clear();
-      RenderTarget::BindDefault();
-      first_ = true;
-    };
+  void ClearCanvas() {
+    render_targets_[0]->Bind();
+    render_targets_[0]->Clear();
+    render_targets_[1]->Bind();
+    render_targets_[1]->Clear();
+    RenderTarget::BindDefault();
+    first_ = true;
+  };
 
-    void DrawPoint(const glm::vec2 sp);
+  void DrawPoint(const glm::vec2 sp);
 
-    void DrawPredefined();
+  void DrawPredefined();
 
-  private:
-    friend class Ui;
+ private:
+  friend class Ui;
 
-    u64 height_;
-    u64 width_;
+  u64 height_;
+  u64 width_;
 
-    float brush_radius_;
-    glm::vec3 brush_color_;
+  float brush_radius_;
+  glm::vec3 brush_color_;
 
-    bool first_{true};
-    bool eraser_{false};
-    bool register_{true};
-    std::chrono::high_resolution_clock::time_point last_draw_;
+  bool first_{true};
+  bool eraser_{false};
+  bool register_{true};
+  std::chrono::high_resolution_clock::time_point last_draw_;
 
-    glm::vec2 previous_position_;
-    glm::vec2 selected_position_;
+  glm::vec2 previous_position_;
+  glm::vec2 selected_position_;
 
-    rc::RenderTarget render_target_canvas_1_{
-      rc::gScreenWidth, rc::gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
-    rc::RenderTarget render_target_canvas_2_{
-      rc::gScreenWidth, rc::gScreenHeight, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
-    std::array<rc::RenderTarget*, 2> render_targets_{&render_target_canvas_1_,
-                                                     &render_target_canvas_2_};
+  rc::RenderTarget render_target_canvas_1_{rc::gScreenWidth, rc::gScreenHeight,
+                                           GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+  rc::RenderTarget render_target_canvas_2_{rc::gScreenWidth, rc::gScreenHeight,
+                                           GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+  std::array<rc::RenderTarget*, 2> render_targets_{&render_target_canvas_1_,
+                                                   &render_target_canvas_2_};
 
-    ScopedObservation<Canvas, App> app_observation_;
+  ScopedObservation<Canvas, App> app_observation_;
 
-    i32 cached_position_location_;
+  i32 cached_position_location_;
 
-    std::vector<RandomPoint> predefined_points_;
+  std::vector<RandomPoint> predefined_points_;
 };
 
-} // namespace rc
+}  // namespace rc
 
-#endif // !RC_CANVAS_H_
+#endif  // !RC_CANVAS_H_

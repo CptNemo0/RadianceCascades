@@ -1,15 +1,15 @@
 #include "flame_generator.h"
 
-#include "GLFW/glfw3.h"
-#include "constants.h"
 #include "glad/include/glad/glad.h"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
 
 #include <chrono>
 #include <utility>
 
+#include "GLFW/glfw3.h"
 #include "app.h"
+#include "constants.h"
+#include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
@@ -18,8 +18,8 @@
 namespace rc {
 
 FlameGenerator::FlameGenerator()
-  : noise_texture_(GetFBMTexture(512, 512, 6.0f, 5.0f)),
-    app_observation_(this) {
+    : noise_texture_(GetFBMTexture(512, 512, 6.0f, 5.0f)),
+      app_observation_(this) {
   app_observation_.Observe(&(App::Instance()));
 
   for (auto& position : positions_) {
@@ -46,8 +46,8 @@ void FlameGenerator::GetMousePositionOnRMB(const glm::vec2& position) {
 
   std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
   if (std::chrono::duration_cast<std::chrono::milliseconds>(
-        now - last_placement_time_)
-        .count() >= time_between_fire_placements_) {
+          now - last_placement_time_)
+          .count() >= time_between_fire_placements_) {
     last_placement_time_ = now;
     positions_[(next_index_++) % positions_.size()] = position;
   }
@@ -61,7 +61,7 @@ void FlameGenerator::RenderFlames() {
   }
 
   const Shader* flame_shader =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kFlame);
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kFlame);
   render_target_fire_.Bind();
   render_target_fire_.Clear();
   noise_texture_->BindTexture(GL_TEXTURE0);
@@ -72,7 +72,7 @@ void FlameGenerator::RenderFlames() {
   Surface::Instance().Draw();
 
   const Shader* combine_shader =
-    ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kOverlay);
   combine_shader->SetInt("texture_1", 0);
   combine_shader->SetInt("texture_2", 1);
   combine_shader->SetVec2("offset_2", glm::vec2(0.0));
@@ -84,7 +84,7 @@ void FlameGenerator::RenderFlames() {
   }
 
   const glm::vec2 reverse_resolution =
-    1.0f / glm::vec2(gScreenWidth, gScreenHeight);
+      1.0f / glm::vec2(gScreenWidth, gScreenHeight);
 
   for (const glm::vec2& position : positions_) {
     if (position.x < 0.0f) {
@@ -92,10 +92,10 @@ void FlameGenerator::RenderFlames() {
     }
 
     combine_shader->SetVec2(
-      "offset_1", (position * reverse_resolution - glm::vec2(0.5f, 0.5f)) *
-                      glm::vec2(-1.0f, 1.0f) +
-                    glm::vec2(0.0, -0.8f * (flame_size_ / gMaxBrushRadius) *
-                                     gMaxFlameSize * 0.5f));
+        "offset_1", (position * reverse_resolution - glm::vec2(0.5f, 0.5f)) *
+                            glm::vec2(-1.0f, 1.0f) +
+                        glm::vec2(0.0, -0.8f * (flame_size_ / gMaxBrushRadius) *
+                                           gMaxFlameSize * 0.5f));
 
     combined_rts_[0]->BindTexture(GL_TEXTURE1);
     combined_rts_[1]->Bind();
@@ -107,4 +107,4 @@ void FlameGenerator::RenderFlames() {
   }
 }
 
-} // namespace rc
+}  // namespace rc
