@@ -41,20 +41,20 @@ glm::vec2 RandomGradient(int ix, int iy) {
 }
 
 float DotGridGradient(int ix, int iy, float x, float y) {
-  const glm::vec2 gradient = RandomGradient(ix, iy);
-  const float dx = x - static_cast<float>(ix);
-  const float dy = y - static_cast<float>(iy);
+  const glm::vec2 gradient{RandomGradient(ix, iy)};
+  const float dx{x - static_cast<float>(ix)};
+  const float dy{y - static_cast<float>(iy)};
   return (dx * gradient.x + dy * gradient.y);
 }
 
 float ComputePerlin(float x, float y) {
-  const int x0 = static_cast<int>(std::floor(x));
-  const int x1 = x0 + 1;
-  const int y0 = static_cast<int>(std::floor(y));
-  const int y1 = y0 + 1;
+  const int x0{static_cast<int>(std::floor(x))};
+  const int x1{x0 + 1};
+  const int y0{static_cast<int>(std::floor(y))};
+  const int y1{y0 + 1};
 
-  const float sx = x - static_cast<float>(x0);
-  const float sy = y - static_cast<float>(y0);
+  const float sx{x - static_cast<float>(x0)};
+  const float sy{y - static_cast<float>(y0)};
 
   return std::lerp(std::lerp(DotGridGradient(x0, y0, x, y),
                              DotGridGradient(x1, y0, x, y), Fade(sx)),

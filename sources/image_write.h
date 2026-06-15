@@ -16,7 +16,7 @@ namespace rc {
 inline static void SaveFramebufferToPng(std::string_view filepath,
                                         i32 width,
                                         i32 height) {
-  const i32 num_channels = 4;
+  const i32 num_channels{4};
   std::vector<u8> pixels(width * height * num_channels);
 
   glPixelStorei(GL_PACK_ALIGNMENT, 1);

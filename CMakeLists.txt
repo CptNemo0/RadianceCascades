@@ -35,8 +35,6 @@ FetchContent_MakeAvailable(glm)
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/sources/*.cc" "${CMAKE_CURRENT_LIST_DIR}/sources/*.cpp") # Define PROJECT_SOURCES as a list of all source files
 set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/" "${CMAKE_CURRENT_LIST_DIR}/sources/imgui" "${CMAKE_CURRENT_LIST_DIR}/sources/imgui/backends")
 
-set_source_files_properties(sources/glad/src/glad.cc PROPERTIES COMPILE_OPTIONS "-w")
-
 # Declaring our executable
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})

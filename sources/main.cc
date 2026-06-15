@@ -37,7 +37,7 @@
 
 int main() {
   try {
-    rc::App& app = rc::App::Instance();
+    rc::App& app{rc::App::Instance()};
     app.Start();
     while (app.ShouldRun()) {
       app.StartFrame();

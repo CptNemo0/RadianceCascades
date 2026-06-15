@@ -9,6 +9,7 @@
 #include "aliasing.h"
 
 namespace rc {
+
 inline constexpr std::string_view gWindowName = "Radiance Cascades";
 inline constexpr std::string_view gPathToShadersList = "shaders\\shaders.list";
 

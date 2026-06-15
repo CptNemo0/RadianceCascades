@@ -39,8 +39,12 @@ class FlameGenerator : public App::Observer {
   }
 
   void Clear() {
+    first_ = true;
+    render_target_combined_1_.Bind();
     render_target_combined_1_.Clear();
+    render_target_combined_2_.Bind();
     render_target_combined_2_.Clear();
+    RenderTarget::BindDefault();
   }
 
   void DrawPredefined() {
@@ -51,6 +55,7 @@ class FlameGenerator : public App::Observer {
     positions_[0] = {gScreenWidth / 2.0f, gScreenHeight / 2.0f};
     flame_size_ = 40;
     next_index_ = 1;
+    first_ = true;
   };
 
  private:

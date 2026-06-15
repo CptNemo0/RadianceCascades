@@ -5,7 +5,6 @@
 
 #include <array>
 #include <chrono>
-#include <queue>
 #include <vector>
 
 #include "aliasing.h"
@@ -15,7 +14,6 @@
 #include "glm/glm.hpp"
 #include "render_target.h"
 #include "scoped_observation.h"
-#include "utility"
 #include "utility.h"
 
 namespace rc {
@@ -89,8 +87,8 @@ class Canvas : public App::Observer {
   bool register_{true};
   std::chrono::high_resolution_clock::time_point last_draw_;
 
-  glm::vec2 previous_position_;
-  glm::vec2 selected_position_;
+  glm::vec2 previous_position_{};
+  glm::vec2 selected_position_{};
 
   rc::RenderTarget render_target_canvas_1_{rc::gScreenWidth, rc::gScreenHeight,
                                            GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};

@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
-#include <print>
 
 #include "aliasing.h"
 #include "app.h"
@@ -16,7 +15,6 @@
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
-#include "timed_scope.h"
 
 namespace rc {
 
@@ -40,7 +38,7 @@ Canvas::Canvas(u64 height, u64 width, u64 brush_radius, glm::vec3 brush_color)
   cached_position_location_ =
       glGetUniformLocation(canvas_shader->id_, "position");
 
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 50; ++i) {
     predefined_points_.push_back(RandomPoint{});
   }
 }
@@ -62,6 +60,7 @@ void Canvas::GetMousePositionOnRMB(const glm::vec2& position) {
   previous_position_ = selected_position_;
 
   if (first_) [[unlikely]] {
+    previous_position_ = registered_point;
     selected_position_ = registered_point;
     first_ = false;
     last_draw_ = now;
@@ -102,13 +101,14 @@ void Canvas::DrawPoint(const glm::vec2 sp) {
 
 void Canvas::DrawPredefined() {
   for (auto& point : predefined_points_) {
-    const Shader* shader =
-        ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
+    const Shader* shader{
+        ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas)};
     shader->SetVec3("brush_color", point.color);
     shader->SetFloat("brush_radius",
                      point.radius * point.radius * gBrushScale * gBrushScale);
     DrawPoint(point.position);
   };
+  RenderTarget::BindDefault();
   first_ = true;
 };
 
@@ -117,24 +117,7 @@ void Canvas::Draw() {
     return;
   }
 
-  const glm::vec2 sp =
-      selected_position_ * glm::vec2(gOneOverWidth, gOneOverHeight);
-
-  DrawPoint(sp);
-
-  // ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas);
-  // render_targets_[0]->Bind();
-  // render_targets_[0]->Clear();
-  // render_targets_[1]->BindTexture(GL_TEXTURE0);
-  // glUniform2f(cached_position_location_, sp.x, sp.y);
-  // Surface::Instnace().Draw();
-  // std::swap(render_targets_[0], render_targets_[1]);
-
-  /*
-   *  ShaderManager::Instance()
-     .Use(ShaderManager::ShaderType::kCanvas)
-     ->setVec3("brush_color", renderer_->canvas_->brush_color_);
-   */
+  DrawPoint(selected_position_ * glm::vec2(gOneOverWidth, gOneOverHeight));
 }
 
 }  // namespace rc

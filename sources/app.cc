@@ -111,14 +111,15 @@ void App::AddObserver(App::Observer* observer) {
 }
 
 void App::RemoveObserver(App::Observer* observer) {
-  if (auto search = std::find(observers_.begin(), observers_.end(), observer);
+  if (const auto search{
+          std::find(observers_.begin(), observers_.end(), observer)};
       search != observers_.end()) {
     observers_.erase(search);
   }
 }
 
 void App::RegisterMousePosition() {
-  const glm::vec2 position = GetCursorPosition();
+  const glm::vec2 position{GetCursorPosition()};
   for (auto* observer : observers_) {
     observer->GetMousePositionOnRMB(position);
   }
