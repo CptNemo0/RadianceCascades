@@ -48,7 +48,7 @@ class FlameGenerator : public App::Observer {
   }
 
   void DrawPredefined() {
-    for (auto& pos : positions_) {
+    for (glm::vec2& pos : positions_) {
       pos.x = -1.0f;
     }
 
@@ -63,29 +63,31 @@ class FlameGenerator : public App::Observer {
 
   std::array<glm::vec2, gMaxFlameCount> positions_;
 
-  u64 next_index_ = 0;
-  float flame_size_ = 10.0f;
-  float flame_speed_ = 0.2f;
-
-  i64 time_between_fire_placements_ = 500;
-  time_point last_placement_time_{};
-
-  bool first_{true};
-  bool eraser_{false};
-  bool turned_on_{false};
-  bool register_{false};
-
   RenderTarget render_target_fire_{rc::gScreenWidth, rc::gScreenHeight,
                                    GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
   RenderTarget render_target_combined_1_{rc::gScreenWidth, rc::gScreenHeight,
                                          GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
   RenderTarget render_target_combined_2_{rc::gScreenWidth, rc::gScreenHeight,
                                          GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+
   std::array<RenderTarget*, 2> combined_rts_;
+
+  ScopedObservation<FlameGenerator, App> app_observation_;
+
+  u64 next_index_{0};
+
+  i64 time_between_fire_placements_{500};
+  time_point last_placement_time_{};
+
+  float flame_size_{10.0f};
+  float flame_speed_{0.2f};
 
   std::unique_ptr<Texture> noise_texture_;
 
-  ScopedObservation<FlameGenerator, App> app_observation_;
+  bool first_{true};
+  bool eraser_{false};
+  bool turned_on_{false};
+  bool register_{false};
 };
 
 }  // namespace rc

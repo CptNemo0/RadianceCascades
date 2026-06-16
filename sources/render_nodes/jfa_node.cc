@@ -30,7 +30,7 @@ JfaNode::JfaNode(std::string_view name, RenderNode* initializer_node)
                                                      GL_RG32F,
                                                      GL_RG,
                                                      GL_FLOAT)) {
-  const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
+  const Shader* jfa_shader{ShaderManager::Instance().Use(ShaderType::kJfa)};
   jfa_shader->SetFloat("width", rc::gScreenWidth);
   jfa_shader->SetFloat("height", rc::gScreenHeight);
   jfa_shader->SetFloat("one_over_width", rc::gOneOverWidth);
@@ -42,8 +42,8 @@ JfaNode::JfaNode(std::string_view name, RenderNode* initializer_node)
 void JfaNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   Initialize();
-  const Shader* jfa_shader = ShaderManager::Instance().Use(ShaderType::kJfa);
-  u32 steps = std::pow(2, rc::gJfaSteps);
+  const Shader* jfa_shader{ShaderManager::Instance().Use(ShaderType::kJfa)};
+  u32 steps{static_cast<u32>(std::pow(2, rc::gJfaSteps))};
   for (auto i{0uz}; i < rc::gJfaSteps; ++i) {
     steps /= 2;
     jfa_shader->SetInt("step_size", steps);
@@ -61,7 +61,7 @@ void JfaNode::BindOutput(int texture_slot) const {
 }
 
 void JfaNode::Initialize() {
-  const auto* _ = ShaderManager::Instance().Use(ShaderType::kSurface);
+  const auto* _{ShaderManager::Instance().Use(ShaderType::kSurface)};
   inputs_[0]->BindOutput(GL_TEXTURE0);
   render_target_1->Bind();
   render_target_1->Clear();

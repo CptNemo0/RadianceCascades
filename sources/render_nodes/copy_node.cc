@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
+#include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
 #include "timed_scope.h"
@@ -27,10 +28,10 @@ CopyNode::CopyNode(std::string_view name,
                    std::initializer_list<RenderNode*> inputs,
                    bool to_screen)
     : RenderNode(name, inputs),
-      copy_shader_(copy_shader),
       output_(to_screen ? nullptr
                         : std::make_unique<RenderTarget>(rc::gScreenWidth,
-                                                         rc::gScreenHeight)) {}
+                                                         rc::gScreenHeight)),
+      copy_shader_(copy_shader) {}
 
 CopyNode::CopyNode(std::string_view name,
                    ShaderType copy_shader,
@@ -39,16 +40,18 @@ CopyNode::CopyNode(std::string_view name,
                    i32 format,
                    i32 type)
     : RenderNode(name, inputs),
-      copy_shader_(copy_shader),
       output_(std::make_unique<RenderTarget>(rc::gScreenWidth,
                                              rc::gScreenHeight,
                                              bits,
                                              format,
-                                             type)) {}
+                                             type)),
+      copy_shader_(copy_shader) {}
 
 void CopyNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
-  const auto* _ = ShaderManager::Instance().Use(copy_shader_);
+
+  const Shader* _{ShaderManager::Instance().Use(copy_shader_)};
+
   if (output_) {
     output_->Bind();
     output_->Clear();
@@ -56,6 +59,7 @@ void CopyNode::Forward() {
     RenderTarget::BindDefault();
     RenderTarget::ClearDefault();
   }
+
   BindInputs();
   rc::Surface::Instance().Draw();
 }

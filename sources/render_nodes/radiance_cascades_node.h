@@ -21,14 +21,14 @@ namespace rc {
 class RadianceCascadesNode : public RenderNode {
  public:
   struct Parameters {
-    i32 step_count = 32;
-    i32 base_ray_count = 4;
-    i32 cascade_count = std::ceil(
-        std::log2f(static_cast<float>(gScreenWidth) * sqrtf(2.0) * 0.5f));
-    f32 overlap = 0.17f;
-    f32 proximity_epsilon = 0.5f / gScreenWidth;
-    bool dirty = true;
-    bool use_sdf = true;
+    i32 step_count{32};
+    i32 base_ray_count{4};
+    i32 cascade_count{static_cast<i32>(std::ceil(
+        std::log2f(static_cast<float>(gScreenWidth) * sqrtf(2.0) * 0.5f)))};
+    f32 overlap{0.17f};
+    f32 proximity_epsilon{0.5f / gScreenWidth};
+    bool dirty{true};
+    bool use_sdf{true};
   };
 
   RadianceCascadesNode(std::string_view name,

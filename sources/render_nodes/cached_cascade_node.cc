@@ -28,8 +28,8 @@ CachedCascadesNode::CachedCascadesNode(
     : RenderNode(name, inputs),
       parameters_(parameters),
       cascade_count_(parameters.cascade_count) {
-  const rc::Shader* shader_rc =
-      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc);
+  const rc::Shader* shader_rc{
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRc)};
   shader_rc->SetVec2("resolution",
                      glm::vec2(static_cast<float>(rc::gScreenWidth),
                                static_cast<float>(rc::gScreenHeight)));
@@ -37,8 +37,8 @@ CachedCascadesNode::CachedCascadesNode(
   shader_rc->SetInt("sdf_texture", 1);
   shader_rc->SetInt("upper_cascade_texture", 2);
 
-  const rc::Shader* shader_rc_sdf =
-      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf);
+  const rc::Shader* shader_rc_sdf{
+      ShaderManager::Instance().Use(ShaderManager::ShaderType::kRcSdf)};
   shader_rc_sdf->SetVec2("resolution",
                          glm::vec2(static_cast<float>(rc::gScreenWidth),
                                    static_cast<float>(rc::gScreenHeight)));
@@ -55,9 +55,9 @@ CachedCascadesNode::CachedCascadesNode(
 
 void CachedCascadesNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
-  const Shader* shader = ShaderManager::Instance().Use(
+  const Shader* shader{ShaderManager::Instance().Use(
       parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
-                          : ShaderManager::ShaderType::kRc);
+                          : ShaderManager::ShaderType::kRc)};
   UpdateUniforms();
   BindInputs();
 
@@ -94,9 +94,9 @@ void CachedCascadesNode::UpdateUniforms() {
   if (!parameters_.dirty) {
     return;
   }
-  const rc::Shader* shader_rc = ShaderManager::Instance().Use(
+  const rc::Shader* shader_rc{ShaderManager::Instance().Use(
       parameters_.use_sdf ? ShaderManager::ShaderType::kRcSdf
-                          : ShaderManager::ShaderType::kRc);
+                          : ShaderManager::ShaderType::kRc)};
   shader_rc->SetFloat("base_ray_count", parameters_.base_ray_count);
   shader_rc->SetFloat("cascade_count", parameters_.cascade_count);
   shader_rc->SetFloat("overlap", parameters_.overlap);

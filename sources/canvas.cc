@@ -47,8 +47,8 @@ void Canvas::GetMousePositionOnRMB(const glm::vec2& position) {
   if (!register_) {
     return;
   }
-  float x = position.x;
-  float y = position.y;
+  float x{position.x};
+  float y{position.y};
 
   // Reverse y position. Without it moving mouse up results in the drawing
   // position going down.
@@ -56,7 +56,7 @@ void Canvas::GetMousePositionOnRMB(const glm::vec2& position) {
   y = height_ - y;
 
   const glm::vec2 registered_point{x, y};
-  const auto now = std::chrono::high_resolution_clock::now();
+  const auto now{std::chrono::high_resolution_clock::now()};
   previous_position_ = selected_position_;
 
   if (first_) [[unlikely]] {

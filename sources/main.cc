@@ -46,7 +46,7 @@ int main() {
       app.EndFrame();
     }
   } catch (std::exception& e) {
-    std::print("{}\n", e.what());
+    std::println("{}", e.what());
   }
 
   return 0;

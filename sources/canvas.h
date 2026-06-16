@@ -24,11 +24,11 @@ class Ui;
 class Canvas : public App::Observer {
  public:
   struct RandomPoint {
-    glm::vec2 position =
+    glm::vec2 position{
         RandomVec2(20.0f, static_cast<float>(gScreenWidth) - 20.0f) *
-        glm::vec2(gOneOverWidth, gOneOverHeight);
-    float radius = Random(10.0f, 20.0f);
-    glm::vec3 color = RandomVec3(0.0f, 1.0f);
+        glm::vec2(gOneOverWidth, gOneOverHeight)};
+    float radius{Random(10.0f, 20.0f)};
+    glm::vec3 color{RandomVec3(0.0f, 1.0f)};
   };
 
   Canvas(u64 height,

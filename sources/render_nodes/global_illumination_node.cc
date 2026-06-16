@@ -37,7 +37,7 @@ GlobalIlluminationNode::GlobalIlluminationNode(
                                                      GL_RGBA,
                                                      GL_UNSIGNED_BYTE)),
       noise_texture_(rc::GetNoiseTexture(rc::gScreenWidth, rc::gScreenHeight)) {
-  const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
+  const Shader* shader{ShaderManager::Instance().Use(ShaderType::kGi)};
   // I know, this is not the perfect way to do this. But currently writing
   // parsing logic for this is the last thing on my mind.
   shader->SetInt("color_texture", 0);
@@ -49,12 +49,12 @@ GlobalIlluminationNode::GlobalIlluminationNode(
 void GlobalIlluminationNode::Forward() {
   TimedScope timed_scope{ShouldMeasure() ? this : nullptr};
   // Not a very pretty hack.
-  float time = App::Instance().GetTime() * 1000.f - time_normalizer_;
+  float time{App::Instance().GetTime() * 1000.f - time_normalizer_};
   if (time > 1000.0f) {
     time_normalizer_ += 1000.0f;
   }
 
-  const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
+  const Shader* shader{ShaderManager::Instance().Use(ShaderType::kGi)};
   BindInputs();
   UpdateUniforms();
   shader->SetFloat("time", App::Instance().GetTime());
@@ -85,7 +85,7 @@ void GlobalIlluminationNode::UpdateUniforms() {
   if (!parameters_.dirty) {
     return;
   }
-  const Shader* shader = ShaderManager::Instance().Use(ShaderType::kGi);
+  const Shader* shader{ShaderManager::Instance().Use(ShaderType::kGi)};
   shader->SetInt("step_count", parameters_.step_count);
   shader->SetFloat("proximity_epsilon", parameters_.proximity_epsilon);
   shader->SetFloat("one_over_ray_count", parameters_.one_over_ray_count);

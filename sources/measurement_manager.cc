@@ -1,10 +1,7 @@
 #include "measurement_manager.h"
 
 #include <algorithm>
-#include <cctype>
 #include <chrono>
-#include <ctime>
-#include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -46,9 +43,9 @@ void MeasurementManager::SaveResults() const {
     aggregator->SaveResults(ss);
   }
 
-  std::string path = std::format(
+  std::string path{std::format(
       "Measurement_{}",
-      std::chrono::current_zone()->to_local(std::chrono::system_clock::now()));
+      std::chrono::current_zone()->to_local(std::chrono::system_clock::now()))};
   path.erase(remove_if(path.begin(), path.end(),
                        [](char c) { return c == ' ' || c == '.' || c == ':'; }),
              path.end());

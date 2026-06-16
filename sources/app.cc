@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
-#include <cstddef>
 #include <memory>
 #include <stdexcept>
 
@@ -93,7 +92,7 @@ bool App::RMBPressed() {
 }
 
 void App::EndFrame() {
-  TimedScope scope{NULL};
+  TimedScope scope{nullptr};
   glfwSwapBuffers(window_);
   glfwPollEvents();
   if (!is_measuring_) {

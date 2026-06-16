@@ -33,10 +33,10 @@ class CachedCascadesNode : public RenderNode {
 
  private:
   void UpdateUniforms();
-  Parameters& parameters_;
-  std::vector<std::unique_ptr<RenderTarget>> render_targets_;
 
-  const u32 cascade_count_;
+  std::vector<std::unique_ptr<RenderTarget>> render_targets_;
+  Parameters& parameters_;
+  u32 cascade_count_;
   u32 internal_frame_counter{};
 };
 

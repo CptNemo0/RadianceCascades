@@ -43,12 +43,12 @@ class CopyNode : public RenderNode {
   }
 
  private:
-  // Stored shader variant. If no is passed to constructor a normal copy is
-  // performed.
-  ShaderType copy_shader_ = ShaderType::kSurface;
-
   // If nullptr, the shader will draw to screen instead.
   std::unique_ptr<RenderTarget> output_;
+
+  // Stored shader variant. If no is passed to constructor a normal copy is
+  // performed.
+  ShaderType copy_shader_{ShaderType::kSurface};
 };
 
 }  // namespace rc

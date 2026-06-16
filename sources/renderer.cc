@@ -133,7 +133,7 @@ void Renderer::Render() {
         return cached_rc_pipeline_;
       case Mode::kComparison:
         return comparison_rc_pipeline_;
-      case Mode::kModeNumber:
+      default:
         return cascades_pipeline_;
     }
   }();

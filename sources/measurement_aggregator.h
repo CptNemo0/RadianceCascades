@@ -41,10 +41,10 @@ class MeasurementAggregator {
   }
 
  private:
-  std::vector<i64> measurements_;
-  bool measuring_turned_on_{false};
   std::string name_;
+  std::vector<i64> measurements_;
   ScopedObservation<MeasurementAggregator, MeasurementManager> observation_;
+  bool measuring_turned_on_{false};
 };
 
 }  // namespace rc

@@ -37,7 +37,7 @@ class Renderer {
  private:
   friend class Ui;
 
-  Mode mode_ = Mode::kRc;
+  Mode mode_{Mode::kRc};
   i32 stage_to_render_;
 
   std::unique_ptr<Canvas> canvas_;
