@@ -50,7 +50,7 @@ void Ui::Render() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
-  ImGui::Begin("Renderer Settings");
+  ImGui::Begin("Renderer settings");
 
   ImGui::Text(
       "DRAW with RIGHT mouse button.\nCHANGE SETTINGS with LEFT mouse button.");
@@ -66,7 +66,7 @@ void Ui::Render() {
       App::Instance().StartMeasuring();
     }
 
-    if (ImGui::Button("Save Results")) {
+    if (ImGui::Button("Save results")) {
       App::Instance().measurement_manager()->SaveResults();
     }
   } else {
@@ -80,7 +80,13 @@ void Ui::Render() {
     renderer_->canvas()->ClearCanvas();
   }
 
-  if (ImGui::Button("Draw Predefined")) {
+  if (ImGui::SliderInt("Predefined points count",
+                       &renderer_->canvas()->predefined_points_to_draw_, 0,
+                       gMaxPredefinedPoints)) {
+    renderer_->cascades_params_.dirty = true;
+  }
+
+  if (ImGui::Button("Draw predefined")) {
     renderer_->canvas()->ClearCanvas();
     renderer_->canvas()->DrawPredefined();
     renderer_->flame_generator_->Clear();
@@ -120,7 +126,7 @@ void Ui::Render() {
     renderer_->canvas()->register_ = false;
   }
 
-  if (ImGui::Checkbox("Display Flames", &flame_generator_->turned_on_)) {
+  if (ImGui::Checkbox("Display flames", &flame_generator_->turned_on_)) {
     renderer_->canvas()->first_ = true;
   }
 
@@ -138,7 +144,7 @@ void Ui::Render() {
   }
 
   int current_mode_index = static_cast<int>(renderer_->mode_);
-  if (ImGui::Combo("Pipeline Mode", &current_mode_index, gModeStrings,
+  if (ImGui::Combo("Pipeline mode", &current_mode_index, gModeStrings,
                    static_cast<size_t>(Renderer::Mode::kModeNumber))) {
     renderer_->mode_ = static_cast<Renderer::Mode>(current_mode_index);
   }
@@ -218,7 +224,7 @@ void Ui::Render() {
     }
 
     for (auto i{0uz}; i < renderer_->cached_params_.cascade_count; ++i) {
-      auto title = std::format("Cascade {} render frequency: ", i);
+      auto title = std::format("Cascade {} render frequency ", i);
       ImGui::SliderInt(title.c_str(),
                        &(renderer_->cached_params_.render_frequencies_[i]), 1,
                        100);

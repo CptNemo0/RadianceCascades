@@ -38,7 +38,7 @@ Canvas::Canvas(u64 height, u64 width, u64 brush_radius, glm::vec3 brush_color)
   cached_position_location_ =
       glGetUniformLocation(canvas_shader->id_, "position");
 
-  for (int i = 0; i < 50; ++i) {
+  for (auto i{0}; i < gMaxPredefinedPoints; ++i) {
     predefined_points_.push_back(RandomPoint{});
   }
 }

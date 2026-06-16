@@ -79,6 +79,8 @@ class Canvas : public App::Observer {
   u64 height_;
   u64 width_;
 
+  i32 predefined_points_to_draw_{gMaxPredefinedPoints};
+
   float brush_radius_;
   glm::vec3 brush_color_;
 
