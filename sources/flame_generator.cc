@@ -70,6 +70,7 @@ void FlameGenerator::RenderFlames() {
   flame_shader->SetFloat("percentage",
                          (flame_size_ / gMaxBrushRadius) * gMaxFlameSize);
   flame_shader->SetFloat("speed", flame_speed_);
+  flame_shader->SetVec3("main_color", main_color);
   Surface::Instance().Draw();
 
   const Shader* combine_shader{

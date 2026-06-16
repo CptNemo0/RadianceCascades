@@ -94,12 +94,19 @@ void Ui::Render() {
     flame_generator_->turned_on_ = true;
   }
 
-  if (ImGui::ColorEdit3("Brush color",
-                        glm::value_ptr(renderer_->canvas_->brush_color_))) {
-    renderer_->canvas_->first_ = true;
-    ShaderManager::Instance()
-        .Use(ShaderManager::ShaderType::kCanvas)
-        ->SetVec3("brush_color", renderer_->canvas_->brush_color_);
+  if (flame_generator_->register_) {
+    if (ImGui::ColorEdit3("Brush color",
+                          glm::value_ptr(flame_generator_->main_color))) {
+      flame_generator_->first_ = true;
+    }
+  } else {
+    if (ImGui::ColorEdit3("Brush color",
+                          glm::value_ptr(renderer_->canvas_->brush_color_))) {
+      renderer_->canvas_->first_ = true;
+      ShaderManager::Instance()
+          .Use(ShaderManager::ShaderType::kCanvas)
+          ->SetVec3("brush_color", renderer_->canvas_->brush_color_);
+    }
   }
 
   if (flame_generator_->register_) {

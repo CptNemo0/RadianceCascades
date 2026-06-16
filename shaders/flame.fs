@@ -10,17 +10,18 @@ uniform sampler2D u_noise_texture;
 
 uniform float percentage;
 
+uniform vec3 main_color;
+
 const float texture_subdivision = 4.0;
 const vec2 center = vec2(0.5, 0.5);
-
-const vec3 dark_red = vec3(0.4, 0.0, 0.0);
-const vec3 orange = vec3(1.0, 0.7, 0.0);
-const vec3 yellow = vec3(1.0, 0.97, 0.35);
-const vec3 white = vec3(1.0, 1.0, 1.0);
 
 const float flame_height = 0.1;
 
 void main() {
+    vec3 dark_red = main_color * vec3(0.4, 0.0, 0.0);
+    vec3 orange = main_color * vec3(1.0, 0.7, 0.0);
+    vec3 yellow = main_color * vec3(1.0, 0.97, 0.35);
+
     float half_percentage = percentage * 0.5;
     vec2 diff = abs(vec2(0.5, 0.5) - uv);
 
@@ -53,7 +54,7 @@ void main() {
     intensity = pow(intensity, 2.0);
 
     if (intensity >= 0.625) {
-        vec3 color = mix(yellow, white, (intensity - 0.675) / 0.375);
+        vec3 color = mix(yellow, main_color, (intensity - 0.675) / 0.375);
         frag_color = vec4(color, 1.0);
         return;
     }

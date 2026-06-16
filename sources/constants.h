@@ -14,8 +14,8 @@ inline constexpr std::string_view gWindowName{"Radiance Cascades"};
 inline constexpr std::string_view gPathToShadersList{"shaders\\shaders.list"};
 inline constexpr std::string_view gFramesOutputDirectory{"output_frames"};
 
-inline constexpr u32 gScreenWidth{1000};
-inline constexpr u32 gScreenHeight{1000};
+inline constexpr u32 gScreenWidth{1024};
+inline constexpr u32 gScreenHeight{1024};
 
 inline constexpr float gOneOverWidth{1.0f / gScreenWidth};
 inline constexpr float gOneOverHeight{1.0f / gScreenHeight};

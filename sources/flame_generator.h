@@ -63,6 +63,8 @@ class FlameGenerator : public App::Observer {
 
   std::array<glm::vec2, gMaxFlameCount> positions_;
 
+  glm::vec3 main_color{1.0f, 1.0f, 1.0f};
+
   RenderTarget render_target_fire_{rc::gScreenWidth, rc::gScreenHeight,
                                    GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
   RenderTarget render_target_combined_1_{rc::gScreenWidth, rc::gScreenHeight,
