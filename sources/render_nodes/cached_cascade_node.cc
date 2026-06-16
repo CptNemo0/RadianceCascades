@@ -45,7 +45,7 @@ CachedCascadesNode::CachedCascadesNode(
   shader_rc_sdf->SetInt("sdf_texture", 1);
   shader_rc_sdf->SetInt("upper_cascade_texture", 2);
 
-  render_targets_.resize(cascade_count_);
+  render_targets_.resize(17);
   std::ranges::generate(render_targets_, []() {
     return std::make_unique<RenderTarget>(rc::gScreenWidth, rc::gScreenHeight,
                                           GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -60,7 +60,7 @@ void CachedCascadesNode::Forward() {
   UpdateUniforms();
   BindInputs();
 
-  for (int i{static_cast<int>(cascade_count_) - 1}; i > -1; --i) {
+  for (int i{static_cast<int>(parameters_.cascade_count) - 1}; i > -1; --i) {
     if (internal_frame_counter % parameters_.render_frequencies_[i]) {
       continue;
     }
@@ -70,7 +70,7 @@ void CachedCascadesNode::Forward() {
 
     render_targets_[i]->Bind();
     render_targets_[i]->Clear();
-    if (i != static_cast<int>(cascade_count_) - 1) {
+    if (i != static_cast<int>(parameters_.cascade_count) - 1) {
       render_targets_[i + 1]->BindTexture(GL_TEXTURE2);
     }
     rc::Surface::Instance().Draw();
