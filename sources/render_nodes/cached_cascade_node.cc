@@ -6,17 +6,18 @@
 #include <memory>
 #include <string_view>
 
+#include "app.h"
 #include "cached_cascades_node.h"
 #include "constants.h"
 #include "glm/fwd.hpp"
 #include "image_write.h"
-#include "render_nodes/radiance_cascades_node.h"
 #include "render_nodes/render_node.h"
 #include "render_target.h"
 #include "shader.h"
 #include "shader_manager.h"
 #include "surface.h"
 #include "timed_scope.h"
+#include "utility.h"
 
 namespace rc {
 
@@ -79,9 +80,10 @@ void CachedCascadesNode::Forward() {
   if (App::Instance().IsMeasuring()) {
     render_targets_[0]->Bind();
     if (App::Instance().ShouldSaveFrame()) {
-      SaveFramebufferToPng(
-          std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
-          gScreenWidth, gScreenHeight);
+      CreateImageOutputDir();
+      SaveFramebufferToPng(std::format("{}\\{}.png", gFramesOutputDirectory,
+                                       App::Instance().MeasuredFrameIndex()),
+                           gScreenWidth, gScreenHeight);
     }
   }
 

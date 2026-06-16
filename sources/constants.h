@@ -12,6 +12,7 @@ namespace rc {
 
 inline constexpr std::string_view gWindowName = "Radiance Cascades";
 inline constexpr std::string_view gPathToShadersList = "shaders\\shaders.list";
+inline constexpr std::string_view gFramesOutputDirectory = "output_frames";
 
 inline constexpr u32 gScreenWidth = 256 * 3;
 inline constexpr u32 gScreenHeight = 256 * 3;

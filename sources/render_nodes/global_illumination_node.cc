@@ -73,9 +73,10 @@ void GlobalIlluminationNode::Forward() {
   if (App::Instance().IsMeasuring()) {
     previous_frame_->Bind();
     if (App::Instance().ShouldSaveFrame()) {
-      SaveFramebufferToPng(
-          std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
-          gScreenWidth, gScreenHeight);
+      CreateImageOutputDir();
+      SaveFramebufferToPng(std::format("{}\\{}.png", gFramesOutputDirectory,
+                                       App::Instance().MeasuredFrameIndex()),
+                           gScreenWidth, gScreenHeight);
     }
   }
 }

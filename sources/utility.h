@@ -28,6 +28,8 @@ std::unique_ptr<Texture> GetFBMTexture(u64 width,
                                        int octaves = 6,
                                        float scale = 5.0f);
 
+void CreateImageOutputDir();
+
 }  // namespace rc
 
 #endif  // !RC_UTILITY_H_

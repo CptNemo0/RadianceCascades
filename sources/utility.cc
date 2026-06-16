@@ -4,12 +4,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <memory>
 #include <numbers>
 #include <random>
 #include <vector>
 
 #include "aliasing.h"
+#include "constants.h"
 #include "glm/ext/quaternion_geometric.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
@@ -119,8 +121,8 @@ std::unique_ptr<Texture> GetPerlinNoiseTexture(u64 width,
                                                float scale) {
   std::vector<glm::vec4> data(width * height);
 
-  const float width_scale = scale / width;
-  const float height_scale = scale / width;
+  const float width_scale{scale / width};
+  const float height_scale{scale / width};
 
   for (u64 y = 0; y < height; ++y) {
     for (u64 x = 0; x < width; ++x) {
@@ -146,8 +148,8 @@ std::unique_ptr<Texture> GetFBMTexture(u64 width,
                                        float scale) {
   std::vector<float> data(width * height);
 
-  const float lacunarity = 2.0f;
-  const float persistence = 0.5f;
+  const float lacunarity{2.0f};
+  const float persistence{0.5f};
 
   for (u64 y = 0; y < height; ++y) {
     for (u64 x = 0; x < width; ++x) {
@@ -164,6 +166,12 @@ std::unique_ptr<Texture> GetFBMTexture(u64 width,
   return std::make_unique<Texture>(width, height,
                                    reinterpret_cast<void*>(data.data()),
                                    GL_R16F, GL_RED, GL_FLOAT);
+}
+
+void CreateImageOutputDir() {
+  if (!std::filesystem::exists(gFramesOutputDirectory)) [[unlikely]] {
+    std::filesystem::create_directory(gFramesOutputDirectory);
+  }
 }
 
 }  // namespace rc

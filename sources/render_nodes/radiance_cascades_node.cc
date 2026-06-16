@@ -18,6 +18,7 @@
 #include "shader_manager.h"
 #include "surface.h"
 #include "timed_scope.h"
+#include "utility.h"
 
 namespace rc {
 
@@ -82,9 +83,10 @@ void RadianceCascadesNode::Forward() {
   if (App::Instance().IsMeasuring()) {
     render_targets_[1]->Bind();
     if (App::Instance().ShouldSaveFrame()) {
-      SaveFramebufferToPng(
-          std::format("rc\\{}.png", App::Instance().MeasuredFrameIndex()),
-          gScreenWidth, gScreenHeight);
+      CreateImageOutputDir();
+      SaveFramebufferToPng(std::format("{}\\{}.png", gFramesOutputDirectory,
+                                       App::Instance().MeasuredFrameIndex()),
+                           gScreenWidth, gScreenHeight);
     }
   }
 }
