@@ -206,14 +206,18 @@ void Ui::Render() {
       renderer_->cached_params_.dirty = true;
     }
 
+    if (ImGui::SliderInt("Cascade count (cached)",
+                         &renderer_->cached_params_.cascade_count, 1, 16)) {
+      renderer_->cached_params_.dirty = true;
+    }
+
     if (ImGui::SliderFloat("Ray overlap (cached)",
                            &renderer_->cached_params_.overlap, 0.0f, 2.0f,
                            "%.2f")) {
       renderer_->cached_params_.dirty = true;
     }
 
-    for (auto i{0uz}; i < renderer_->cached_params_.render_frequencies_.size();
-         ++i) {
+    for (auto i{0uz}; i < renderer_->cached_params_.cascade_count; ++i) {
       auto title = std::format("Cascade {} render frequency: ", i);
       ImGui::SliderInt(title.c_str(),
                        &(renderer_->cached_params_.render_frequencies_[i]), 1,
