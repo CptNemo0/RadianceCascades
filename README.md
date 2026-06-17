@@ -37,14 +37,14 @@ The `shaders/` directory is copied next to the executable automatically as a pos
 
 ## Controls
 
-- The window is a fixed **768×768** (non-resizable).
+- The window is a fixed **1024×1024** (non-resizable).
 - **Draw** with the **RIGHT** mouse button.
 - Interact with the settings panel using the **LEFT** mouse button.
 - Press **ESC** to quit.
 
 ## Modes
 
-Selectable from the **Pipeline Mode** dropdown:
+Selectable from the **Pipeline mode** dropdown:
 
 - **Global illumination** — reference path tracer: every shaded pixel casts a configurable number of rays and ray-marches the scene.
 - **Radiance cascades** — the Radiance Cascades algorithm.
@@ -72,17 +72,17 @@ Crucially, the slider only changes the texture that gets rendered to the screen;
 
 Scene / brush:
 
-- **Brush color**.
+- **Brush color** — colors the canvas brush, or the flames while **Draw flames** is active.
 - **Brush size** / **Flame size** (the slider follows whichever of _Draw canvas_ / _Draw flames_ is active).
-- **Draw canvas**, **Draw flames**, **Display Flames** toggles, and **Flame speed**.
+- **Draw canvas**, **Draw flames**, **Display flames** toggles, and **Flame speed**.
 - **Eraser** toggle.
-- **Clear** the canvas, or **Draw Predefined** to load a built-in test scene.
+- **Clear** the canvas, or **Draw predefined** to load a built-in randomized test scene; the **Predefined points count** slider (0–50) sets how many points it draws.
 - **Save frames** — write rendered frames to disk as images.
 
 Per-mode raymarching / cascade parameters:
 
 - **Global illumination**: step count, proximity threshold, ray count, noise amount.
-- **Radiance cascades**: _Use SDF_ toggle, step count, proximity threshold, base ray count, cascade count, ray overlap.
+- **Radiance cascades**: step count, proximity threshold, cascade count, ray overlap.
 - **Cached cascades**: all of the Radiance Cascades parameters plus a per-cascade **render frequency** (how often each cascade level is refreshed).
 - **Comparison**: the Radiance Cascades and Cached Cascades parameters plus a **Range** control for the difference visualisation.
 
@@ -91,7 +91,7 @@ Per-mode raymarching / cascade parameters:
 The application has a built-in per-stage profiler used to generate the thesis measurements:
 
 1. Click **Measure** — it times every pipeline node for the next 512 frames (the timing of each node's render pass, in **microseconds**).
-2. Click **Save Results** — writes the samples to a `Measurement_<timestamp>.stats` file next to the executable.
+2. Click **Save results** — writes the samples to a `Measurement_<timestamp>.stats` file next to the executable.
 
 The file has one row per node: the node name followed by its space-separated samples:
 
