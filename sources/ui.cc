@@ -157,10 +157,6 @@ void Ui::Render() {
   }
 
   auto core_mode = [&] {
-    if (ImGui::Checkbox("Use SDF", &renderer_->cascades_params_.use_sdf)) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
     if (ImGui::SliderInt("Stage to render", &renderer_->stage_to_render_, 0,
                          renderer_->cascades_pipeline_.size() - 1)) {
     }
@@ -176,11 +172,6 @@ void Ui::Render() {
       renderer_->cascades_params_.dirty = true;
     }
 
-    if (ImGui::SliderInt("Base rays count",
-                         &renderer_->cascades_params_.base_ray_count, 1, 64)) {
-      renderer_->cascades_params_.dirty = true;
-    }
-
     if (ImGui::SliderInt("Cascade count",
                          &renderer_->cascades_params_.cascade_count, 1, 16)) {
       renderer_->cascades_params_.dirty = true;
@@ -193,11 +184,6 @@ void Ui::Render() {
   };
 
   auto cache_mode = [&] {
-    if (ImGui::Checkbox("Use SDF (cached)",
-                        &renderer_->cached_params_.use_sdf)) {
-      renderer_->cached_params_.dirty = true;
-    }
-
     if (ImGui::SliderInt("Stage to render (cached)",
                          &renderer_->stage_to_render_, 0,
                          renderer_->cached_rc_pipeline_.size() - 1)) {
@@ -211,11 +197,6 @@ void Ui::Render() {
     if (ImGui::SliderFloat("Proximity threshold (cached)",
                            &renderer_->cached_params_.proximity_epsilon,
                            0.00001f, 0.005f, "%.5f")) {
-      renderer_->cached_params_.dirty = true;
-    }
-
-    if (ImGui::SliderInt("Base rays count (cached)",
-                         &renderer_->cached_params_.base_ray_count, 4, 64)) {
       renderer_->cached_params_.dirty = true;
     }
 

@@ -100,7 +100,8 @@ void Canvas::DrawPoint(const glm::vec2 sp) {
 };
 
 void Canvas::DrawPredefined() {
-  for (auto& point : predefined_points_) {
+  for (int i{}; i < predefined_points_to_draw_; ++i) {
+    const auto& point = predefined_points_[i];
     const Shader* shader{
         ShaderManager::Instance().Use(ShaderManager::ShaderType::kCanvas)};
     shader->SetVec3("brush_color", point.color);
