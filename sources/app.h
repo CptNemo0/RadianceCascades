@@ -18,11 +18,12 @@ namespace rc {
 class MeasurementManager;
 class Renderer;
 class Ui;
+class AsyncImageWriter;
 
 // The Big Boss class.
-// It stores the renderers, initializes third party libraries and loads OpenGL.
-// It's responsible for the general flow of the program and interfacing with the
-// window manager.
+// It stores the renderers, initializes third party libraries and loads
+// OpenGL. It's responsible for the general flow of the program and
+// interfacing with the window manager.
 class App {
  public:
   class Observer {
@@ -82,7 +83,11 @@ class App {
 
   u64 MeasuredFrameIndex() const;
 
+  bool LastFrameToMeasure() const;
+
   float GetTime() const { return time_; }
+
+  AsyncImageWriter* async_writer() { return image_writer_.get(); }
 
  private:
   friend class Ui;
@@ -94,6 +99,7 @@ class App {
   std::unique_ptr<MeasurementManager> measurement_manager_;
   std::unique_ptr<Renderer> renderer_;
   std::unique_ptr<Ui> ui_;
+  std::unique_ptr<AsyncImageWriter> image_writer_;
 
   u64 frames_measured_{};
   bool is_measuring_;

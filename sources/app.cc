@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "aliasing.h"
+#include "async_image_writer.h"
 #include "constants.h"
 #include "glm/ext/vector_float2.hpp"
 #include "measurement_manager.h"
@@ -98,7 +99,7 @@ void App::EndFrame() {
   if (!is_measuring_) {
     return;
   }
-  if (frames_measured_ == gFramesToMeasure - 1) {
+  if (MeasuredFrameIndex() == gFramesToMeasure - 1) {
     StopMeasuring();
     return;
   }
@@ -143,12 +144,17 @@ u64 App::MeasuredFrameIndex() const {
   return frames_measured_;
 }
 
+bool App::LastFrameToMeasure() const {
+  return MeasuredFrameIndex() == gFramesToMeasure - 1;
+}
+
 void App::StartImpl() {
   ShaderManager::Instance().LoadShaders();
   renderer_ = std::make_unique<Renderer>();
   measurement_manager_ = std::make_unique<MeasurementManager>();
   renderer_->Initialize();
   ui_ = std::make_unique<Ui>(window_, renderer_.get());
+  image_writer_ = std::make_unique<AsyncImageWriter>(8);
 }
 
 }  // namespace rc
