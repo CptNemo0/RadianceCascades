@@ -7,9 +7,8 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
-#include <print>
 #include <stop_token>
-#include <type_traits>
+#include <utility>
 
 #include "aliasing.h"
 
@@ -24,6 +23,42 @@ class PoolRingBuffer {
     T value_{};
     bool valid_{false};
     bool borrowed_{true};
+  };
+
+  struct BorrowedNode {
+    PoolRingBuffer* source_{nullptr};
+    Node* node_{nullptr};
+
+    BorrowedNode() = default;
+
+    explicit BorrowedNode(PoolRingBuffer* source, Node* node)
+        : source_(source), node_(node) {}
+
+    void Release() {
+      if (source_ && node_) {
+        source_->ReturnNode(node_);
+      }
+    }
+
+    BorrowedNode(BorrowedNode&& other) noexcept
+        : source_(std::exchange(other.source_, nullptr)),
+          node_(std::exchange(other.node_, nullptr)) {}
+
+    void operator=(BorrowedNode&& other) noexcept {
+      if (this != &other) {
+        Release();
+        source_ = std::exchange(other.source_, nullptr);
+        node_ = std::exchange(other.node_, nullptr);
+      }
+    }
+
+    BorrowedNode(const BorrowedNode&) = delete;
+    void operator=(const BorrowedNode&) = delete;
+
+    ~BorrowedNode() { Release(); }
+
+    explicit operator bool() const { return node_ && source_; }
+    T* operator->() const { return &node_->value_; }
   };
 
   explicit PoolRingBuffer(u64 capacity)
@@ -41,7 +76,7 @@ class PoolRingBuffer {
         return;
       }
 
-      push_pointer_->value_ = new_value;
+      push_pointer_->value_ = std::move(new_value);
       push_pointer_->valid_ = true;
       push_pointer_ = push_pointer_->next_;
       ++size_;
@@ -49,10 +84,10 @@ class PoolRingBuffer {
     not_empty_.notify_one();
   }
 
-  Node* Pop(std::stop_token token) {
+  BorrowedNode Pop(std::stop_token token) {
     std::unique_lock lock{mutex_};
     if (!not_empty_.wait(lock, token, [&] { return !empty(); })) {
-      return nullptr;
+      return {};
     }
 
     Node* previous = pop_pointer_->previous_;
@@ -87,7 +122,7 @@ class PoolRingBuffer {
 
     not_full_.notify_one();
     assert(to_be_popped->valid_);
-    return to_be_popped;
+    return BorrowedNode{this, to_be_popped};
   }
 
   void ReturnNode(Node* node) {
@@ -133,6 +168,7 @@ class PoolRingBuffer {
     not_full_.notify_one();
   }
 
+ private:
   u64 capacity() const { return capacity_; }
 
   u64 size() const { return size_; };
@@ -141,7 +177,6 @@ class PoolRingBuffer {
 
   u64 full() const { return size_ == capacity_ - borrowed_; }
 
- private:
   void ConnectNodes() {
     borrowed_ = capacity_;
     for (u64 i{}; i < capacity_; ++i) {
