@@ -154,7 +154,7 @@ void App::StartImpl() {
   measurement_manager_ = std::make_unique<MeasurementManager>();
   renderer_->Initialize();
   ui_ = std::make_unique<Ui>(window_, renderer_.get());
-  image_writer_ = std::make_unique<AsyncImageWriter>(8);
+  image_writer_ = std::make_unique<AsyncImageWriter>(gWriterWorkersNum);
 }
 
 }  // namespace rc
