@@ -24,11 +24,6 @@ class AsyncImageWriter {
 
   explicit AsyncImageWriter(u64 worker_num)
       : jobs_{std::make_unique<PoolRingBuffer<SaveFrameJob>>(kCapacity)} {
-    // Pre-create the blocks the steady state needs when the workers keep up
-    // (one per worker, one in flight on the render thread, one parked): the
-    // push path then allocates nothing. If the queue ever backs up deeper,
-    // those extra blocks are allocated once and recycled thereafter (up to
-    // kCapacity).
     FramePool::Instance().Init(kCapacity, 4 * gScreenHeight * gScreenWidth);
 
     worker_threads_.reserve(worker_num);
