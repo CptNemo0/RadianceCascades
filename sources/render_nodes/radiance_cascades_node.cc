@@ -8,7 +8,6 @@
 #include <string_view>
 #include <utility>
 
-#include "aliasing.h"
 #include "app.h"
 #include "async_image_writer.h"
 #include "constants.h"
@@ -23,12 +22,6 @@
 #include "utility.h"
 
 namespace rc {
-
-namespace {
-
-std::array<u8, gScreenHeight * gScreenWidth * 4> pixels;
-
-}
 
 RadianceCascadesNode::RadianceCascadesNode(
     std::string_view name,
@@ -92,9 +85,8 @@ void RadianceCascadesNode::Forward() {
     render_targets_[1]->Bind();
     if (App::Instance().ShouldSaveFrame()) {
       CreateImageOutputDir();
-      ReadFramebufferRgba(pixels);
       App::Instance().async_writer()->PushWork(
-          std::move(pixels), App::Instance().MeasuredFrameIndex());
+          ReadFramebufferRgba(), App::Instance().MeasuredFrameIndex());
     }
   }
 }

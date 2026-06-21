@@ -69,7 +69,7 @@ class PoolRingBuffer {
     ConnectNodes();
   }
 
-  void Push(T& new_value, std::stop_token token) {
+  void Push(T new_value, std::stop_token token) {
     {
       std::unique_lock lock{mutex_};
       if (!not_full_.wait(lock, token, [&] { return !full(); })) {
@@ -89,7 +89,6 @@ class PoolRingBuffer {
     if (!not_empty_.wait(lock, token, [&] { return !empty(); })) {
       return {};
     }
-
     Node* previous = pop_pointer_->previous_;
     Node* to_be_popped = pop_pointer_;
     Node* next = pop_pointer_->next_;
@@ -185,16 +184,15 @@ class PoolRingBuffer {
   }
 
   bool ValidateNodeAddress(const Node* node) const {
-    auto cast = [](const Node* node) static -> uintptr_t {
-      return reinterpret_cast<uintptr_t>(node);
+    auto cast = [](const Node* to_cast) static -> uintptr_t {
+      return reinterpret_cast<uintptr_t>(to_cast);
     };
 
     const uintptr_t start_address{cast(nodes_.get())};
-    const uintptr_t last_address{cast(&nodes_[capacity_ - 1])};
     const uintptr_t check{cast(node)};
 
     // Trying to return address from outside the nodes_ block.
-    if (start_address > check || last_address < check) {
+    if (start_address > check || cast(&nodes_[capacity_ - 1]) < check) {
       return false;
     }
 

@@ -4,15 +4,16 @@
 #include "glad/include/glad/glad.h"
 
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <format>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <string_view>
 
 #include "aliasing.h"
 #include "constants.h"
+#include "frame_pool.h"
 #include "stb_image_write.h"
 
 namespace rc {
@@ -32,11 +33,16 @@ inline void FlipVerticallyInPlace(std::span<u8> pixels,
   }
 }
 
-inline void ReadFramebufferRgba(
-    std::array<u8, gScreenHeight * gScreenWidth * 4>& pixels) {
-  glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  glReadPixels(0, 0, gScreenWidth, gScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE,
-               pixels.data());
+inline std::optional<Frame> ReadFramebufferRgba() {
+  // Drawn from the shared frame pool: after warm-up this reuses a recycled
+  // block instead of allocating on the render thread's hot path.
+  std::optional<Frame> pixels = FramePool::Instance().GetFrame();
+  if (pixels) {
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, gScreenWidth, gScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE,
+                 pixels.value().data());
+  }
+  return pixels;
 }
 
 inline void WriteRgbaToPng(std::string_view filepath,

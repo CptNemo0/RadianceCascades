@@ -2,13 +2,10 @@
 
 #include "glad/include/glad/glad.h"
 
-#include <array>
 #include <initializer_list>
 #include <memory>
 #include <string_view>
-#include <utility>
 
-#include "aliasing.h"
 #include "app.h"
 #include "async_image_writer.h"
 #include "constants.h"
@@ -22,12 +19,6 @@
 #include "utility.h"
 
 namespace rc {
-
-namespace {
-
-std::array<u8, gScreenHeight * gScreenWidth * 4> pixels;
-
-}
 
 GlobalIlluminationNode::GlobalIlluminationNode(
     std::string_view name,
@@ -83,9 +74,8 @@ void GlobalIlluminationNode::Forward() {
     previous_frame_->Bind();
     if (App::Instance().ShouldSaveFrame()) {
       CreateImageOutputDir();
-      ReadFramebufferRgba(pixels);
       App::Instance().async_writer()->PushWork(
-          std::move(pixels), App::Instance().MeasuredFrameIndex());
+          ReadFramebufferRgba(), App::Instance().MeasuredFrameIndex());
     }
   }
 }
