@@ -12,6 +12,10 @@
 #include "aliasing.h"
 #endif  // !GLFW_INCLUDE_NONE
 
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#endif  // !STB_IMAGE_WRITE_IMPLEMENTATION
+
 #ifndef STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #endif  // !STB_IMAGE_WRITE_IMPLEMENTATION
@@ -27,6 +31,7 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
 #endif
+#include "stb_image.h"
 #include "stb_image_write.h"
 #if defined(__clang__)
 #pragma clang diagnostic pop

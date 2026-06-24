@@ -9,7 +9,7 @@
 
 More classes will follow once Fire and Ice are solid.
 
-The point isn't only to *watch* a match — it's to **mass-produce videos of them**. A match runs headless, writes **every frame** to disk, and emits a **timestamped event log** (wall hits, buff pickups, clashes, ability uses, damage ticks, deaths). A downstream tool turns the log into an audio track; `ffmpeg` then muxes frames + audio into a finished video. Matches are authored as small **`.match` JSON scenarios** that an LLM can generate and feed to the program.
+The point isn't only to _watch_ a match — it's to **mass-produce videos of them**. A match runs headless, writes **every frame** to disk, and emits a **timestamped event log** (wall hits, buff pickups, clashes, ability uses, damage ticks, deaths). A downstream tool turns the log into an audio track; `ffmpeg` then muxes frames + audio into a finished video. Matches are authored as small **`.match` JSON scenarios** that an LLM can generate and feed to the program.
 
 The simulation renders **unlit** sprites into the scene; the existing **Radiance Cascades** pipeline then lights it. See **[RADIANCE_CASCADES.md](RADIANCE_CASCADES.md)** for the engine internals (render-graph nodes, JFA/SDF, the RC/Cached-RC/GI lighting methods, build presets, and the profiler).
 
@@ -38,14 +38,14 @@ Simulation (CPU)  ──snapshot──►  BouncersNode ──► UVColorspace �
 
 The RC engine currently has **no material concept** — a single color texture doubles as both emission and occlusion. To support **transparent, reflective, and refractive** objects we add **one R8 texture** that travels alongside the color texture through UVColorspace → JFA → SDF. Each texel's number selects a surface type:
 
-| value | type        | RC behaviour |
-|------:|-------------|--------------|
-| 0     | empty       | ray passes |
-| 1     | opaque      | terminate, return color (current behaviour) |
-| 2     | emissive    | accumulate emission |
-| 3     | translucent | attenuate + tint, keep marching |
-| 4     | reflective  | spawn reflected ray, blend by reflectivity |
-| 5     | refractive  | Snell-bend the ray (experimental) |
+| value | type        | RC behaviour                                |
+| ----: | ----------- | ------------------------------------------- |
+|     0 | empty       | ray passes                                  |
+|     1 | opaque      | terminate, return color (current behaviour) |
+|     2 | emissive    | accumulate emission                         |
+|     3 | translucent | attenuate + tint, keep marching             |
+|     4 | reflective  | spawn reflected ray, blend by reflectivity  |
+|     5 | refractive  | Snell-bend the ray (experimental)           |
 
 Continuous parameters (opacity, reflectivity, IOR) come from uniforms or a tiny per-type lookup; surface **normals are taken from the SDF gradient** (free — we already build the SDF). The list is extensible.
 
@@ -60,15 +60,27 @@ A `.match` file is JSON (parsed with **rapidjson**) describing one fight. Indica
 ```jsonc
 {
   "version": 1,
-  "arena":   { "size": 1024, "restitution": 1.0 },
-  "seed":    12345,
-  "fps":     60,
+  "arena": { "size": 1024, "restitution": 1.0 },
+  "seed": 12345,
+  "fps": 60,
   "duration_cap_s": 60,
   "fighters": [
-    { "class": "fire", "pos": [0.30, 0.50], "vel": [0.6, 0.2], "radius": 28, "health": 100 },
-    { "class": "ice",  "pos": [0.70, 0.50], "vel": [-0.6, -0.2], "radius": 28, "health": 100 }
+    {
+      "class": "fire",
+      "pos": [0.3, 0.5],
+      "vel": [0.6, 0.2],
+      "radius": 28,
+      "health": 100,
+    },
+    {
+      "class": "ice",
+      "pos": [0.7, 0.5],
+      "vel": [-0.6, -0.2],
+      "radius": 28,
+      "health": 100,
+    },
   ],
-  "buffs": { "interval_s": 5.0, "first_spawn_s": 3.0 }
+  "buffs": { "interval_s": 5.0, "first_spawn_s": 3.0 },
 }
 ```
 
@@ -93,63 +105,73 @@ On match end the program flushes state, finalizes the JSONL event log, writes a 
 Surgical, milestone-by-milestone changes. `＋` = new file, `~` = modified file. The **offline recorder works end-to-end before** the threaded live mode and the risky refraction work.
 
 ### M0 — Build & config foundations
-- `~ CMakeLists.txt`: FetchContent **rapidjson** (header-only); vendor **`stb_image.h`**; enable `tests/` via CTest; link threads.
-- `＋ sources/app_config.h`: POD `AppConfig` { `headless`, `match_path`, `out_dir`, `fps`, `seed`, `on_complete_cmd`, `record` }.
-- `＋ sources/cli.{h,cc}`: tiny argv parser → `AppConfig` (`--match`, `--out`, `--headless`, `--fps`, `--seed`, `--on-complete`).
-- `~ sources/main.cc`: parse args; add the `stb_image` implementation define (mirroring the existing `stb_image_write` block); branch interactive vs record.
+
+- [x] `~ CMakeLists.txt`: FetchContent **rapidjson** (header-only); vendor **`stb_image.h`**; enable `tests/` via CTest; link threads.
+- [ ] `＋ sources/app_config.h`: POD `AppConfig` { `headless`, `match_path`, `out_dir`, `fps`, `seed`, `on_complete_cmd`, `record` }.
+- [ ] `＋ sources/cli.{h,cc}`: tiny argv parser → `AppConfig` (`--match`, `--out`, `--headless`, `--fps`, `--seed`, `--on-complete`).
+- [ ] `~ sources/main.cc`: parse args; add the `stb_image` implementation define (mirroring the existing `stb_image_write` block); branch interactive vs record.
 
 ### M1 — Headless, fixed-dt clock, seeded RNG
-- `~ sources/app.{h,cc}`: `headless_` → `GLFW_VISIBLE=false`, skip `Ui` + mouse observers; **fixed-dt clock** (`time_ = frame_index_ * (1/fps)`, reusing the measuring precedent) so events are frame-stamped; headless loop runs until the match signals end.
-- `＋ sources/rng.h` + `~ sources/utility.cc`: replace the global `std::mt19937 gen(1000)` with a seedable `Rng` service seeded from `AppConfig.seed` (convenience for repeatable test runs — not a hard reproducibility guarantee); route `Random*`/noise through it.
+
+- [ ] `~ sources/app.{h,cc}`: `headless_` → `GLFW_VISIBLE=false`, skip `Ui` + mouse observers; **fixed-dt clock** (`time_ = frame_index_ * (1/fps)`, reusing the measuring precedent) so events are frame-stamped; headless loop runs until the match signals end.
+- [ ] `＋ sources/rng.h` + `~ sources/utility.cc`: replace the global `std::mt19937 gen(1000)` with a seedable `Rng` service seeded from `AppConfig.seed` (convenience for repeatable test runs — not a hard reproducibility guarantee); route `Random*`/noise through it.
 
 ### M2 — Asset pipeline & sprite rendering
-- `~ sources/texture.{h,cc}`: `Texture::FromFile(path)` via stb_image (alpha, premultiply, sRGB→linear).
-- `＋ sources/asset_manager.{h,cc}`: path→`Texture` cache / atlas.
-- `＋ sources/sprite_batch.{h,cc}`: instanced-quad batch (per-instance transform, uv-rect, tint) — many sprites per draw. Does **not** overload the `Surface` singleton.
-- `＋ shaders/sprite.{vs,fs}` + `~ ShaderManager` enum/`ParseShaderType` + `shaders.list`: sprite shader writes scene color **and** the material-type channel.
+
+- [ ] `~ sources/texture.{h,cc}`: `Texture::FromFile(path)` via stb_image (alpha, premultiply, sRGB→linear).
+- [ ] `＋ sources/asset_manager.{h,cc}`: path→`Texture` cache / atlas.
+- [ ] `＋ sources/sprite_batch.{h,cc}`: instanced-quad batch (per-instance transform, uv-rect, tint) — many sprites per draw. Does **not** overload the `Surface` singleton.
+- [ ] `＋ shaders/sprite.{vs,fs}` + `~ ShaderManager` enum/`ParseShaderType` + `shaders.list`: sprite shader writes scene color **and** the material-type channel.
 
 ### M3 — Simulation core (pure CPU, headless-testable) — `sources/sim/`
-- `＋ sim/body.h` — circle (pos, vel, radius, inv_mass).
-- `＋ sim/pbd_solver.{h,cc}` — predict positions → circle-circle & circle-wall constraints → solve iterations → derive velocities; restitution for energy conservation; knockback = applied impulse.
-- `＋ sim/fighter.{h,cc}` — id, class enum, health, body, status list, armed-buff state.
-- `＋ sim/status_effect.{h,cc}` — generic duration/tick effects: Burn (DoT), Freeze, Knockback. Extensible.
-- `＋ sim/class_ability.{h,cc}` — per-class strategy. Fire: pickup arms flame → clash applies Burn. Ice: pickup freezes enemy 2 s → clash within window ⇒ knockback + damage.
-- `＋ sim/buff.h` — buff entity, spawn cadence, pickup detection.
-- `＋ sim/match_rules.h` — victory (last alive / health at time cap) + time cap.
-- `＋ sim/events.h` — `SimEvent` { type, frame, fighter ids, **position** (pan), **magnitude** (intensity) }; types: WallHit, BuffSpawn, BuffPickup, Clash, AbilityUse, DamageTick, Freeze, Knockback, Death, MatchEnd.
-- `＋ sim/simulation.{h,cc}` — owns fighters/buffs; `Step(dt)` → PBD, collisions→Clash events, status ticks, buff spawn/pickup, win check; emits events + produces a snapshot.
-- `＋ tests/` — PBD energy conservation, status timers, parser correctness.
+
+- [ ] `＋ sim/body.h` — circle (pos, vel, radius, inv_mass).
+- [ ] `＋ sim/pbd_solver.{h,cc}` — predict positions → circle-circle & circle-wall constraints → solve iterations → derive velocities; restitution for energy conservation; knockback = applied impulse.
+- [ ] `＋ sim/fighter.{h,cc}` — id, class enum, health, body, status list, armed-buff state.
+- [ ] `＋ sim/status_effect.{h,cc}` — generic duration/tick effects: Burn (DoT), Freeze, Knockback. Extensible.
+- [ ] `＋ sim/class_ability.{h,cc}` — per-class strategy. Fire: pickup arms flame → clash applies Burn. Ice: pickup freezes enemy 2 s → clash within window ⇒ knockback + damage.
+- [ ] `＋ sim/buff.h` — buff entity, spawn cadence, pickup detection.
+- [ ] `＋ sim/match_rules.h` — victory (last alive / health at time cap) + time cap.
+- [ ] `＋ sim/events.h` — `SimEvent` { type, frame, fighter ids, **position** (pan), **magnitude** (intensity) }; types: WallHit, BuffSpawn, BuffPickup, Clash, AbilityUse, DamageTick, Freeze, Knockback, Death, MatchEnd.
+- [ ] `＋ sim/simulation.{h,cc}` — owns fighters/buffs; `Step(dt)` → PBD, collisions→Clash events, status ticks, buff spawn/pickup, win check; emits events + produces a snapshot.
+- [ ] `＋ tests/` — PBD energy conservation, status timers, parser correctness.
 
 ### M4 — `.match` schema & parser — `sources/match/`
-- `＋ match/match_parser.{h,cc}` — rapidjson → `MatchConfig` → initial `Simulation`; validation + errors.
-- `＋ matches/*.match` — sample scenarios.
-- `＋ tests/` — parser + round-trip.
+
+- [ ] `＋ match/match_parser.{h,cc}` — rapidjson → `MatchConfig` → initial `Simulation`; validation + errors.
+- [ ] `＋ matches/*.match` — sample scenarios.
+- [ ] `＋ tests/` — parser + round-trip.
 
 ### M5 — Snapshot & sim↔render bridge (lockstep now, ring-buffer-ready)
-- `＋ sim/snapshot.h` — POD `SimSnapshot` { frame; global effects (shake, frost-wave, flash); fighters[] (transform, class, tint, status flags); particles[]; buffs[] }, trivially copyable.
-- `＋ sim/state_ring_buffer.h` — SPSC lock-free ring (interface built now; lockstep recording consumes immediately).
-- `＋ sources/event_log.{h,cc}` — collect `SimEvent`s → timestamped (frame + sim time) **JSONL** log; include position+magnitude for audio; SPSC-shaped for a future audio thread.
+
+- [ ] `＋ sim/snapshot.h` — POD `SimSnapshot` { frame; global effects (shake, frost-wave, flash); fighters[] (transform, class, tint, status flags); particles[]; buffs[] }, trivially copyable.
+- [ ] `＋ sim/state_ring_buffer.h` — SPSC lock-free ring (interface built now; lockstep recording consumes immediately).
+- [ ] `＋ sources/event_log.{h,cc}` — collect `SimEvent`s → timestamped (frame + sim time) **JSONL** log; include position+magnitude for audio; SPSC-shaped for a future audio thread.
 
 ### M6 — Bouncers render node & pipeline
-- `＋ sources/render_nodes/bouncers_node.{h,cc}` (RenderNode) — consume `SimSnapshot`, draw fighters/buffs/particles via `SpriteBatch` into the **scene color texture** + parallel **R8 material-type texture**, no lighting. Replaces Canvas+Fire as the scene source, then feeds existing UVColorspace → JFA → SDF → RC.
-- Global effects: frost-wave (screen-space distortion — synergizes with refraction), scene shake (offset uniform), star bursts (particles), damage discoloration (per-sprite tint).
-- `~ sources/renderer.{h,cc}` — add `Mode::kBouncers` + `bouncers_pipeline_`; construct Renderer in "bouncers" vs "interactive" config; give the node access to the snapshot source.
+
+- [ ] `＋ sources/render_nodes/bouncers_node.{h,cc}` (RenderNode) — consume `SimSnapshot`, draw fighters/buffs/particles via `SpriteBatch` into the **scene color texture** + parallel **R8 material-type texture**, no lighting. Replaces Canvas+Fire as the scene source, then feeds existing UVColorspace → JFA → SDF → RC.
+- [ ] Global effects: frost-wave (screen-space distortion — synergizes with refraction), scene shake (offset uniform), star bursts (particles), damage discoloration (per-sprite tint).
+- [ ] `~ sources/renderer.{h,cc}` — add `Mode::kBouncers` + `bouncers_pipeline_`; construct Renderer in "bouncers" vs "interactive" config; give the node access to the snapshot source.
 
 ### M7 — RC optics upgrade (alpha → reflection → refraction)
-- Carry the **R8 material-type texture** through UVColorspace → JFA → SDF the same way color is, so the RC march can sample type at a hit. Continuous params via uniforms / per-type lookup; **normals from the SDF gradient**.
-- `~ shaders/radiance_cascade_sdf.fs`, `radiance_cascade.fs`, `global_illumination.fs` — at a hit, read the type id and branch.
-  - **M7a alpha** — translucent hit ⇒ attenuate+tint accumulated radiance by transmittance and keep marching (accumulate emission) instead of terminating.
-  - **M7b reflection** — reflective hit ⇒ reflected secondary ray; blend by reflectivity.
-  - **M7c refraction (experimental)** — `＋ shaders/radiance_cascade_refractive.fs`: Snell bend using the SDF-gradient normal; document the cascade-merge break + the chosen approximation (thesis material).
+
+- [ ] Carry the **R8 material-type texture** through UVColorspace → JFA → SDF the same way color is, so the RC march can sample type at a hit. Continuous params via uniforms / per-type lookup; **normals from the SDF gradient**.
+- [ ] `~ shaders/radiance_cascade_sdf.fs`, `radiance_cascade.fs`, `global_illumination.fs` — at a hit, read the type id and branch.
+  - [ ] **M7a alpha** — translucent hit ⇒ attenuate+tint accumulated radiance by transmittance and keep marching (accumulate emission) instead of terminating.
+  - [ ] **M7b reflection** — reflective hit ⇒ reflected secondary ray; blend by reflectivity.
+  - [ ] **M7c refraction (experimental)** — `＋ shaders/radiance_cascade_refractive.fs`: Snell bend using the SDF-gradient normal; document the cascade-merge break + the chosen approximation (thesis material).
 
 ### M8 — Recording, manifest & callback
-- `＋ sources/recorder.{h,cc}` — record mode replacing the `IsMeasuring()`-gated save; **double-buffered PBO async readback**, **zero-padded** filenames (`frame_%06d.png`), optional encoder thread / ffmpeg-stdin pipe; output dir from CLI.
-- `＋ sources/process.h` — cross-platform process launch (Windows `CreateProcess` / `std::system`).
-- On match end: flush ring buffer → finalize event log → write **`manifest.json`** (rapidjson) → spawn `on_complete_cmd` with the manifest path → clean shutdown.
+
+- [ ] `＋ sources/recorder.{h,cc}` — record mode replacing the `IsMeasuring()`-gated save; **double-buffered PBO async readback**, **zero-padded** filenames (`frame_%06d.png`), optional encoder thread / ffmpeg-stdin pipe; output dir from CLI.
+- [ ] `＋ sources/process.h` — cross-platform process launch (Windows `CreateProcess` / `std::system`).
+- [ ] On match end: flush ring buffer → finalize event log → write **`manifest.json`** (rapidjson) → spawn `on_complete_cmd` with the manifest path → clean shutdown.
 
 ### M9 — Live mode & polish (later)
-- Flip the bridge to **threaded**: sim thread `Step`s at fixed dt → pushes to `state_ring_buffer`; render thread consumes latest with **interpolation**; event queue feeds an optional live-audio thread.
-- ImGui Bouncers controls (pause/restart/pick `.match`); additional fighter classes (data + ability strategy).
+
+- [ ] Flip the bridge to **threaded**: sim thread `Step`s at fixed dt → pushes to `state_ring_buffer`; render thread consumes latest with **interpolation**; event queue feeds an optional live-audio thread.
+- [ ] ImGui Bouncers controls (pause/restart/pick `.match`); additional fighter classes (data + ability strategy).
 
 ---
 
