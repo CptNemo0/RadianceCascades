@@ -2,13 +2,14 @@
 
 #include "glad/include/glad/glad.h"
 
-#include <format>
+#include <array>
 #include <initializer_list>
 #include <memory>
 #include <string_view>
 #include <utility>
 
 #include "app.h"
+#include "async_image_writer.h"
 #include "constants.h"
 #include "glm/fwd.hpp"
 #include "image_write.h"
@@ -84,9 +85,8 @@ void RadianceCascadesNode::Forward() {
     render_targets_[1]->Bind();
     if (App::Instance().ShouldSaveFrame()) {
       CreateImageOutputDir();
-      SaveFramebufferToPng(std::format("{}\\{}.png", gFramesOutputDirectory,
-                                       App::Instance().MeasuredFrameIndex()),
-                           gScreenWidth, gScreenHeight);
+      App::Instance().async_writer()->PushWork(
+          ReadFramebufferRgba(), App::Instance().MeasuredFrameIndex());
     }
   }
 }
