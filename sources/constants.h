@@ -42,6 +42,8 @@ inline constexpr u64 gFramesToMeasure{512};
 
 inline constexpr i32 gMaxPredefinedPoints{50};
 
+inline constexpr u64 gWriterWorkersNum{8};
+
 // Full-screen quad vertices:
 // Positions (x, y, z) | Texture Coords (u, v)
 inline constexpr std::array<f32, 30> full_screen_quad_vertices{

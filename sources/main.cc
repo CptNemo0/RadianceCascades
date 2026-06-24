@@ -1,5 +1,15 @@
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdlib>
+#include <ctime>
+#include <sstream>
+#include <stop_token>
+#include <string>
+
+#include "aliasing.h"
 #endif  // !GLFW_INCLUDE_NONE
 
 #ifndef STB_IMAGE_WRITE_IMPLEMENTATION
@@ -32,6 +42,7 @@
 #include <print>
 
 #include "app.h"
+#include "pool_ring_buffer.h"
 #include "renderer.h"
 #include "ui.h"
 
@@ -45,8 +56,8 @@ int main() {
       app.ui()->Render();
       app.EndFrame();
     }
-  } catch (std::exception& e) {
-    std::println("{}", e.what());
+  } catch (std::exception& error) {
+    std::println("{}", error.what());
   }
 
   return 0;

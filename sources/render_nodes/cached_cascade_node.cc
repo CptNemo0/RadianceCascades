@@ -1,12 +1,12 @@
 #include "glad/include/glad/glad.h"
 
 #include <algorithm>
-#include <format>
 #include <initializer_list>
 #include <memory>
 #include <string_view>
 
 #include "app.h"
+#include "async_image_writer.h"
 #include "cached_cascades_node.h"
 #include "constants.h"
 #include "glm/fwd.hpp"
@@ -81,9 +81,8 @@ void CachedCascadesNode::Forward() {
     render_targets_[0]->Bind();
     if (App::Instance().ShouldSaveFrame()) {
       CreateImageOutputDir();
-      SaveFramebufferToPng(std::format("{}\\{}.png", gFramesOutputDirectory,
-                                       App::Instance().MeasuredFrameIndex()),
-                           gScreenWidth, gScreenHeight);
+      App::Instance().async_writer()->PushWork(
+          ReadFramebufferRgba(), App::Instance().MeasuredFrameIndex());
     }
   }
 
