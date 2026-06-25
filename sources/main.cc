@@ -47,12 +47,13 @@
 #include <print>
 
 #include "app.h"
-#include "pool_ring_buffer.h"
+#include "cli_argument_parser.h"
 #include "renderer.h"
 #include "ui.h"
 
-int main() {
+int main(int argc, const char** argv) {
   try {
+    rc::CliArgumentParser::Instance().Parse(argc, argv);
     rc::App& app{rc::App::Instance()};
     app.Start();
     while (app.ShouldRun()) {

@@ -9,7 +9,9 @@
 
 More classes will follow once Fire and Ice are solid.
 
-The point isn't only to _watch_ a match — it's to **mass-produce videos of them**. A match runs headless, writes **every frame** to disk, and emits a **timestamped event log** (wall hits, buff pickups, clashes, ability uses, damage ticks, deaths). A downstream tool turns the log into an audio track; `ffmpeg` then muxes frames + audio into a finished video. Matches are authored as small **`.match` JSON scenarios** that an LLM can generate and feed to the program.
+The point isn't only to _watch_ a match — it's to **mass-produce videos of them**. A match runs headless, writes **every frame** to disk, and emits a **timestamped event log** (wall hits, buff pickups, clashes, ability uses, damage ticks, deaths). A downstream tool turns the log into an audio track; `ffmpeg` then muxes frames + audio into a finished video.
+
+Matches are authored as small **`.match` JSON scenarios** that an LLM can generate. The app runs like a **server**: a dedicated reader thread consumes **newline-delimited JSON** from **stdin** — one match per line, either the inline config or a `{ "match_file": "path/to.match" }` reference — validates each, and **queues** it. The simulation renders the queued matches one after another, so a producer can stream an unbounded backlog of fights into a single long-lived process.
 
 The simulation renders **unlit** sprites into the scene; the existing **Radiance Cascades** pipeline then lights it. See **[RADIANCE_CASCADES.md](RADIANCE_CASCADES.md)** for the engine internals (render-graph nodes, JFA/SDF, the RC/Cached-RC/GI lighting methods, build presets, and the profiler).
 
@@ -24,15 +26,16 @@ The engine is a node-based render graph. Today the lit-scene front-end is **Canv
 The Bouncers replace the hand-drawn front-end with a simulation-driven one:
 
 ```
-Simulation (CPU)  ──snapshot──►  BouncersNode ──► UVColorspace ──► JFA ──► SDF ──► RC ──► frame
-     │                              (sprites, unlit)
-     └──events──►  event log (JSONL)  ──►  audio tool  ──►  ffmpeg mux
+stdin (NDJSON) ─reader thread─► match queue ─► Simulation (CPU) ─┬─snapshot─► BouncersNode ─► UVColorspace ─► JFA ─► SDF ─► RC ─► frame
+                                                                  │             (sprites, unlit)
+                                                                  └─events────► event log (JSONL) ─► audio tool ─► ffmpeg mux
 ```
 
-- **Simulation** is pure CPU (no OpenGL): Position-Based Dynamics, collisions, class abilities, status effects, buff spawning, win conditions. It is unit-testable in isolation.
+- **Input server (reader thread).** A `std::jthread` blocks on stdin, reads one NDJSON line at a time, resolves `match_file` references, validates each against the `.match` schema, and pushes valid `MatchConfig`s onto a bounded thread-safe **match queue** (the existing `RingBuffer`). Invalid lines are reported to stderr and skipped; a full queue back-pressures the producer.
+- **Simulation** is pure CPU (no OpenGL): it pops the next match, runs Position-Based Dynamics, collisions, class abilities, status effects, buff spawning, and win conditions to completion, then pops the next. Unit-testable in isolation. (Already on its own `jthread` in `bouncers/simulation.h`.)
 - Each step it produces a **POD snapshot** (fighter transforms, status visuals, particles, global effects) and emits **events**.
 - **`BouncersNode`** draws the snapshot's sprites into the **scene color texture** plus a parallel **R8 material-type texture**, with no lighting. The rest of the RC pipeline lights the result.
-- **Run modes:** the first target is an **offline recorder** — sim and render run in **lockstep** (one step per frame), so output is stable. A threaded live-preview mode (sim thread + SPSC ring buffer) comes later.
+- **Run modes:** the streaming **server** above is the primary feed; a one-shot `--match file` path remains for single renders. Sim and render stay decoupled by the snapshot ring buffer so the producer never blocks rendering.
 
 ### The material model (R8 type texture)
 
@@ -86,92 +89,84 @@ A `.match` file is JSON (parsed with **rapidjson**) describing one fight. Indica
 
 Victory is last-fighter-standing, or highest health at `duration_cap_s`.
 
+### Input protocol (streaming stdin)
+
+In server mode the app reads **one JSON value per line** (NDJSON) from stdin. Each line is one of:
+
+- an **inline** match object (the schema above), or
+- a **reference**: `{ "match_file": "matches/duel.match" }` — the reader loads and parses that file.
+
+Each valid match is appended to the queue and rendered in arrival order; an invalid line is logged to stderr and skipped without stopping the stream. Reaching EOF on stdin drains the queue, finalizes outputs, then exits.
+
 ---
 
 ## Planned usage
 
 ```sh
-# headless render of a scenario to a frame folder + event log + manifest
-RadianceCascades.exe --headless --match matches/duel.match --out out/duel --fps 60 \
+# one-shot: headless render of a single scenario
+RadianceCascades.exe --headless --match matches/duel.match --out out/ --fps 60 \
     --on-complete "python tools/make_video.py"
+
+# server: stream a backlog of matches in as newline-delimited JSON
+cat backlog.ndjson | RadianceCascades.exe --headless --server --out out/ --fps 60
+#   backlog.ndjson, one match (or {"match_file": ...}) per line:
+#   {"version":1,"seed":1,"fighters":[ ... ]}
+#   {"match_file":"matches/duel.match"}
+
+# an LLM producer can pipe directly and keep the process alive
+my_llm_match_generator | RadianceCascades.exe --headless --server --out out/
 ```
 
-On match end the program flushes state, finalizes the JSONL event log, writes a **`manifest.json`** (frames dir, fps, resolution, log path, audio cues), then invokes `--on-complete` with the manifest path so the downstream audio + `ffmpeg` stage can run. The same binary still launches as the interactive engine when no match/headless flags are given.
+Per match the program writes its frames to a per-match subfolder of `--out`, finalizes that match's JSONL event log, writes a **`manifest.json`** (frames dir, fps, resolution, log path, audio cues), then invokes `--on-complete` with the manifest path so the downstream audio + `ffmpeg` stage can run. The same binary still launches as the interactive engine when no match/server/headless flags are given.
 
 ---
 
 ## Roadmap
 
-Surgical, milestone-by-milestone changes. `＋` = new file, `~` = modified file. The **offline recorder works end-to-end before** the threaded live mode and the risky refraction work.
+Built **MVP-first**: stand up a hardcoded vertical slice — balls bounce → lit by RC → recorded to a video — end to end, then layer gameplay, then data-driven authoring (`.match` / stdin), and do the rendering upgrade last. Most items are meant to land rough and get **iterated while later stages are built**, not perfected in isolation. `＋` = new file, `~` = modified file.
 
-### M0 — Build & config foundations
+### Stage 0 — Prerequisites (done)
 
-- [x] `~ CMakeLists.txt`: FetchContent **rapidjson** (header-only); vendor **`stb_image.h`**; enable `tests/` via CTest; link threads.
-- [ ] `＋ sources/app_config.h`: POD `AppConfig` { `headless`, `match_path`, `out_dir`, `fps`, `seed`, `on_complete_cmd`, `record` }.
-- [ ] `＋ sources/cli.{h,cc}`: tiny argv parser → `AppConfig` (`--match`, `--out`, `--headless`, `--fps`, `--seed`, `--on-complete`).
-- [ ] `~ sources/main.cc`: parse args; add the `stb_image` implementation define (mirroring the existing `stb_image_write` block); branch interactive vs record.
+- [x] `~ CMakeLists.txt` / `main.cc` — FetchContent **rapidjson**, vendor **`stb_image.h`** (+ impl define), `tests/` via CTest, threads. Threading/recording primitives already in the tree: `RingBuffer`, `PoolRingBuffer`, `FramePool`, `SaveFrameJob`, `AsyncImageWriter`; `Simulation` already runs on its own `jthread`.
 
-### M1 — Headless, fixed-dt clock, seeded RNG
+### Stage 1 — MVP vertical slice (hardcoded match; running in a window is fine)
 
-- [ ] `~ sources/app.{h,cc}`: `headless_` → `GLFW_VISIBLE=false`, skip `Ui` + mouse observers; **fixed-dt clock** (`time_ = frame_index_ * (1/fps)`, reusing the measuring precedent) so events are frame-stamped; headless loop runs until the match signals end.
-- [ ] `＋ sources/rng.h` + `~ sources/utility.cc`: replace the global `std::mt19937 gen(1000)` with a seedable `Rng` service seeded from `AppConfig.seed` (convenience for repeatable test runs — not a hard reproducibility guarantee); route `Random*`/noise through it.
+Goal: a hardcoded set of circles bounces, gets lit by RC, and is written to frames. No classes, effects, buffs, `.match`, or stdin yet.
 
-### M2 — Asset pipeline & sprite rendering
+- [x] **CLI parser w/ validation** `＋ sources/cli.{h,cc}` — argv → a small parsed-options struct, **validation embedded** (`--out`, `--fps`, frame/duration cap; `--match` / `--server` added later). **Do not** design a global config up front — grow the struct as real flags appear.
+- [ ] **Basic bouncing sim** `~ sources/bouncers/{simulation.h,entity.h}` — a basic **bouncing fighter** (circle: pos, vel, radius, mass) + a minimal **PBD** step: predict → circle-circle & circle-wall constraints → derive velocities, restitution = 1 (energy conserved). Hardcoded initial fighters. No health/effects/buffs. (Replace the empty spin loop; fix `!stop_token.stop_possible()` → `!stop_requested()`.)
+- [ ] **Snapshot + bridge** `＋ sources/bouncers/snapshot.h` — POD `SimSnapshot` { frame; fighters[] (transform) } (grows later); hand sim→render over the existing `RingBuffer` / `PoolRingBuffer` (borrow/return `Node`s avoid per-frame reallocation).
+- [ ] **Bouncers render node** `＋ sources/render_nodes/bouncers_node.{h,cc}` + `~ renderer.{h,cc}` — consume a snapshot, draw circles **procedurally** (simple shader, no textures yet) into the scene color texture (+ an R8 type texture, all opaque/emissive for now), then feed the existing UVColorspace → JFA → SDF → RC chain. Add `Mode::kBouncers` + `bouncers_pipeline_`.
+- [ ] **Recording** — replace the `IsMeasuring()`-gated save, reusing `AsyncImageWriter` + `FramePool` + `SaveFrameJob`; add **double-buffered PBO readback** (kill the `glReadPixels` stall) + **zero-padded** names (`frame_%06d.png`) → `--out`. Mux the folder with ffmpeg by hand to confirm the slice. ✅ **MVP milestone.**
 
-- [ ] `~ sources/texture.{h,cc}`: `Texture::FromFile(path)` via stb_image (alpha, premultiply, sRGB→linear).
-- [ ] `＋ sources/asset_manager.{h,cc}`: path→`Texture` cache / atlas.
-- [ ] `＋ sources/sprite_batch.{h,cc}`: instanced-quad batch (per-instance transform, uv-rect, tint) — many sprites per draw. Does **not** overload the `Surface` singleton.
-- [ ] `＋ shaders/sprite.{vs,fs}` + `~ ShaderManager` enum/`ParseShaderType` + `shaders.list`: sprite shader writes scene color **and** the material-type channel.
+### Stage 2 — Gameplay (effects & classes)
 
-### M3 — Simulation core (pure CPU, headless-testable) — `sources/sim/`
+Layer onto the working slice; iterate visuals as you go.
 
-- [ ] `＋ sim/body.h` — circle (pos, vel, radius, inv_mass).
-- [ ] `＋ sim/pbd_solver.{h,cc}` — predict positions → circle-circle & circle-wall constraints → solve iterations → derive velocities; restitution for energy conservation; knockback = applied impulse.
-- [ ] `＋ sim/fighter.{h,cc}` — id, class enum, health, body, status list, armed-buff state.
-- [ ] `＋ sim/status_effect.{h,cc}` — generic duration/tick effects: Burn (DoT), Freeze, Knockback. Extensible.
-- [ ] `＋ sim/class_ability.{h,cc}` — per-class strategy. Fire: pickup arms flame → clash applies Burn. Ice: pickup freezes enemy 2 s → clash within window ⇒ knockback + damage.
-- [ ] `＋ sim/buff.h` — buff entity, spawn cadence, pickup detection.
-- [ ] `＋ sim/match_rules.h` — victory (last alive / health at time cap) + time cap.
-- [ ] `＋ sim/events.h` — `SimEvent` { type, frame, fighter ids, **position** (pan), **magnitude** (intensity) }; types: WallHit, BuffSpawn, BuffPickup, Clash, AbilityUse, DamageTick, Freeze, Knockback, Death, MatchEnd.
-- [ ] `＋ sim/simulation.{h,cc}` — owns fighters/buffs; `Step(dt)` → PBD, collisions→Clash events, status ticks, buff spawn/pickup, win check; emits events + produces a snapshot.
-- [ ] `＋ tests/` — PBD energy conservation, status timers, parser correctness.
+- [ ] **Health, status effects, classes** — extend the fighter with health; generic duration/tick **status effects** (Burn DoT, Freeze, Knockback); per-class **ability strategy** (Fire: pickup arms flame → clash applies Burn; Ice: pickup freezes enemy ~2 s → clash ⇒ knockback + damage).
+- [ ] **Buffs & win conditions** — buff entity + spawn cadence + pickup detection; victory (last alive / health at time cap) + time cap.
+- [ ] **Events + event log** `＋ sources/bouncers/events.h`, `＋ sources/event_log.{h,cc}` — `SimEvent` { type, frame, fighter ids, position (pan), magnitude (intensity) }; WallHit/BuffSpawn/BuffPickup/Clash/AbilityUse/DamageTick/Freeze/Knockback/Death/MatchEnd → timestamped **JSONL** log for the audio stage.
+- [ ] **Textured sprites** `~ texture.{h,cc}` (`FromFile` via stb_image), `＋ asset_manager`, `＋ sprite_batch` + `shaders/sprite.{vs,fs}` — swap procedural circles for textured sprites/atlas; on-fighter effect tints, particles (star bursts), global effects (scene shake, frost-wave).
+- [ ] `＋ tests/` — PBD energy conservation, status-effect timers.
 
-### M4 — `.match` schema & parser — `sources/match/`
+### Stage 3 — Authoring (replace hardcoded with data)
 
-- [ ] `＋ match/match_parser.{h,cc}` — rapidjson → `MatchConfig` → initial `Simulation`; validation + errors.
-- [ ] `＋ matches/*.match` — sample scenarios.
+- [ ] **`.match` parser** `＋ sources/match/match_parser.{h,cc}` — rapidjson → `MatchConfig` → initial sim; validation + errors. `＋ matches/*.match` samples. Plug in where Stage 1 hardcoded the fighters.
+- [ ] **Input server** `＋ sources/bouncers/match_server.{h,cc}` — `std::jthread` reading **NDJSON** from stdin; resolve `{ "match_file": "…" }` refs; validate via the parser (bad line → stderr + skip); `Push` valid matches onto a bounded `RingBuffer<MatchConfig,N>`; sim `WaitPop`s and renders each to completion. stdin EOF → drain → exit. Gate behind `--server`.
+- [ ] **Manifest + callback** `＋ sources/process.h` — per-match output subfolder; on match end write **`manifest.json`** (frames dir, fps, resolution, log path, cues) → spawn `--on-complete` with the manifest path.
 - [ ] `＋ tests/` — parser + round-trip.
 
-### M5 — Snapshot & sim↔render bridge (lockstep now, ring-buffer-ready)
+### Stage 4 — Optional / later
 
-- [ ] `＋ sim/snapshot.h` — POD `SimSnapshot` { frame; global effects (shake, frost-wave, flash); fighters[] (transform, class, tint, status flags); particles[]; buffs[] }, trivially copyable.
-- [ ] `＋ sim/state_ring_buffer.h` — SPSC lock-free ring (interface built now; lockstep recording consumes immediately).
-- [ ] `＋ sources/event_log.{h,cc}` — collect `SimEvent`s → timestamped (frame + sim time) **JSONL** log; include position+magnitude for audio; SPSC-shaped for a future audio thread.
+- [ ] **Headless + fixed-dt clock + seeded RNG** — `GLFW_VISIBLE=false`, skip Ui/mouse observers; fixed-dt clock; seedable `Rng`. **Optional** — only needed for true background rendering / repeatable runs; the slice works in a window without it. Determinism is explicitly not a goal.
+- [ ] **Live preview & polish** — threaded sim with snapshot **interpolation**; ImGui Bouncers controls (pause/restart/pick `.match`); more fighter classes.
 
-### M6 — Bouncers render node & pipeline
+### Stage 5 — Rendering upgrade (the very end)
 
-- [ ] `＋ sources/render_nodes/bouncers_node.{h,cc}` (RenderNode) — consume `SimSnapshot`, draw fighters/buffs/particles via `SpriteBatch` into the **scene color texture** + parallel **R8 material-type texture**, no lighting. Replaces Canvas+Fire as the scene source, then feeds existing UVColorspace → JFA → SDF → RC.
-- [ ] Global effects: frost-wave (screen-space distortion — synergizes with refraction), scene shake (offset uniform), star bursts (particles), damage discoloration (per-sprite tint).
-- [ ] `~ sources/renderer.{h,cc}` — add `Mode::kBouncers` + `bouncers_pipeline_`; construct Renderer in "bouncers" vs "interactive" config; give the node access to the snapshot source.
-
-### M7 — RC optics upgrade (alpha → reflection → refraction)
-
-- [ ] Carry the **R8 material-type texture** through UVColorspace → JFA → SDF the same way color is, so the RC march can sample type at a hit. Continuous params via uniforms / per-type lookup; **normals from the SDF gradient**.
-- [ ] `~ shaders/radiance_cascade_sdf.fs`, `radiance_cascade.fs`, `global_illumination.fs` — at a hit, read the type id and branch.
-  - [ ] **M7a alpha** — translucent hit ⇒ attenuate+tint accumulated radiance by transmittance and keep marching (accumulate emission) instead of terminating.
-  - [ ] **M7b reflection** — reflective hit ⇒ reflected secondary ray; blend by reflectivity.
-  - [ ] **M7c refraction (experimental)** — `＋ shaders/radiance_cascade_refractive.fs`: Snell bend using the SDF-gradient normal; document the cascade-merge break + the chosen approximation (thesis material).
-
-### M8 — Recording, manifest & callback
-
-- [ ] `＋ sources/recorder.{h,cc}` — record mode replacing the `IsMeasuring()`-gated save; **double-buffered PBO async readback**, **zero-padded** filenames (`frame_%06d.png`), optional encoder thread / ffmpeg-stdin pipe; output dir from CLI.
-- [ ] `＋ sources/process.h` — cross-platform process launch (Windows `CreateProcess` / `std::system`).
-- [ ] On match end: flush ring buffer → finalize event log → write **`manifest.json`** (rapidjson) → spawn `on_complete_cmd` with the manifest path → clean shutdown.
-
-### M9 — Live mode & polish (later)
-
-- [ ] Flip the bridge to **threaded**: sim thread `Step`s at fixed dt → pushes to `state_ring_buffer`; render thread consumes latest with **interpolation**; event queue feeds an optional live-audio thread.
-- [ ] ImGui Bouncers controls (pause/restart/pick `.match`); additional fighter classes (data + ability strategy).
+- [ ] Carry the **R8 material-type texture** through UVColorspace → JFA → SDF; branch in `radiance_cascade_sdf.fs` / `radiance_cascade.fs` / `global_illumination.fs`; **normals from the SDF gradient**.
+  - [ ] **alpha** — translucent hit ⇒ attenuate + tint, keep marching.
+  - [ ] **reflection** — reflective hit ⇒ reflected secondary ray, blend by reflectivity.
+  - [ ] **refraction (experimental)** — `＋ shaders/radiance_cascade_refractive.fs`: Snell bend; document the cascade-merge break (thesis material).
 
 ---
 
