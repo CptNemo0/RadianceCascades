@@ -51,7 +51,7 @@
 #include "renderer.h"
 #include "ui.h"
 
-int main(int argc, const char** argv) {
+int main(int argc, char* argv[]) {
   try {
     rc::CliArgumentParser::Instance().Parse(argc, argv);
     rc::App& app{rc::App::Instance()};

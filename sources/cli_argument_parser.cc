@@ -14,8 +14,7 @@ namespace rc {
 namespace {
 
 constexpr std::string_view help_string = R"(
-Example usage: .\RadianceCascades.exe --argument1 --argument_name2="argument2"
-Yes, the quotation marks are essentials.
+Example usage: .\RadianceCascades.exe --argument --OtherArgument="value"
 Argument names are case insensitive.
 --help    Displays this message
 )";
@@ -52,14 +51,13 @@ std::string_view CliArgumentParser::GetHelp() const {
   return help_string;
 }
 
-void CliArgumentParser::Parse(const int argc, const char* argv[]) {
-  Init();
+void CliArgumentParser::Parse(const int argc, char* argv[]) {
   for (int i{1}; i < argc; ++i) {
     ParseArgument(argv[i]);
   }
 };
 
-void CliArgumentParser::ParseArgument(const char* argv) {
+void CliArgumentParser::ParseArgument(char* argv) {
   using Node = ArgumentTrie::Node;
 
   if (argv[0] != '-' || argv[1] != '-') {
@@ -99,14 +97,7 @@ void CliArgumentParser::ParseArgument(const char* argv) {
                       argument_name, GetHelp()));
     }
 
-    // String_view constructed form the pointer to the beginning of the value
-    // and the length of the value
-    const std::string_view value{(argv + i + 1), [&]() {
-                                   u64 j{};
-                                   for (; (argv + i + 1)[j] != 0; ++j) {
-                                   }
-                                   return j;
-                                 }()};
+    const std::string_view value{(argv + i + 1)};
 
     if (value.empty()) {
       throw std::runtime_error(
@@ -118,6 +109,7 @@ void CliArgumentParser::ParseArgument(const char* argv) {
     if (node->functions && node->functions->Validate &&
         node->functions->Execute && node->functions->Validate(value)) {
       node->functions->Execute(value);
+      return;
     }
   }
 

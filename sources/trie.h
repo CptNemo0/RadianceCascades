@@ -2,6 +2,7 @@
 #define RADIANCE_CASCADES_TRIE_H_
 
 #include <cctype>
+#include <format>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -26,10 +27,17 @@ class ArgumentTrie {
     explicit Node(Node* parent) { previous = parent; }
 
     char ValidateNormalize(char character) const {
-      char lowercase = std::tolower(character);
+      // If character is not representable by u8 std::lowercase will UB.
+      if (character < 0) {
+        throw std::runtime_error{
+            std::format("Character: {} is not a letter.", character)};
+      }
+
+      const char lowercase{static_cast<char>(std::tolower(character))};
+
       if (lowercase < 'a' || lowercase > 'z') {
         throw std::runtime_error{
-            "Trying to insert a character that isn't a letter."};
+            std::format("Character: {} is not a letter.", character)};
       }
       return lowercase;
     }

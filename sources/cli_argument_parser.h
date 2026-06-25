@@ -1,5 +1,5 @@
-#ifndef RADIANCE_CASCADES_CLI_ARGUMENT_PRASER_H_
-#define RADIANCE_CASCADES_CLI_ARGUMENT_PRASER_H_
+#ifndef RADIANCE_CASCADES_CLI_ARGUMENT_PARSER_H_
+#define RADIANCE_CASCADES_CLI_ARGUMENT_PARSER_H_
 
 #include <array>
 #include <string_view>
@@ -14,7 +14,7 @@ class CliArgumentParser {
     return instance;
   }
 
-  void Parse(const int argc, const char* argv[]);
+  void Parse(const int argc, char* argv[]);
 
   CliArgumentParser(const CliArgumentParser& other) = delete;
   CliArgumentParser(CliArgumentParser&& other) = delete;
@@ -28,7 +28,7 @@ class CliArgumentParser {
   CliArgumentParser();
   void Init();
 
-  void ParseArgument(const char* argv);
+  void ParseArgument(char* argv);
 
   std::string_view GetHelp() const;
 
@@ -39,4 +39,4 @@ class CliArgumentParser {
 
 }  // namespace rc
 
-#endif  // ! RADIANCE_CASCADES_CLI_ARGUMENT_PRASER_H_
+#endif  // ! RADIANCE_CASCADES_CLI_ARGUMENT_PARSER_H_
