@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include "aliasing.h"
 #include "async_image_writer.h"
@@ -26,7 +27,7 @@ App::~App() {
   glfwTerminate();
 }
 
-void App::Start() {
+void App::Start(std::unique_ptr<Config> config) {
   if (!glfwInit()) {
     throw std::runtime_error("Failed to initialize GLFW");
   }
@@ -52,7 +53,7 @@ void App::Start() {
 
   glfwSwapInterval(0);
 
-  StartImpl();
+  StartImpl(std::move(config));
 }
 
 void App::StartFrame() {
@@ -148,13 +149,14 @@ bool App::LastFrameToMeasure() const {
   return MeasuredFrameIndex() == gFramesToMeasure - 1;
 }
 
-void App::StartImpl() {
+void App::StartImpl(std::unique_ptr<Config> config) {
+  config_ = std::move(config);
   ShaderManager::Instance().LoadShaders();
   renderer_ = std::make_unique<Renderer>();
   measurement_manager_ = std::make_unique<MeasurementManager>();
-  renderer_->Initialize();
   ui_ = std::make_unique<Ui>(window_, renderer_.get());
   image_writer_ = std::make_unique<AsyncImageWriter>(gWriterWorkersNum);
+  renderer_->Initialize();
 }
 
 }  // namespace rc

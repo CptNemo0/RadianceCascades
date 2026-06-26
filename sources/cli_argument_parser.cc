@@ -1,12 +1,16 @@
 #include "cli_argument_parser.h"
 
+#include <any>
 #include <cassert>
 #include <format>
+#include <memory>
 #include <print>
 #include <stdexcept>
 #include <string_view>
+#include <utility>
 
 #include "aliasing.h"
+#include "app.h"
 #include "trie.h"
 
 namespace rc {
@@ -19,11 +23,11 @@ Argument names are case insensitive.
 --help    Displays this message
 )";
 
-bool EmptyFunc([[maybe_unused]] std::string_view) {
-  return true;
+std::any EmptyFunc([[maybe_unused]] std::string_view) {
+  return std::make_any<bool>(true);
 }
 
-void PrintHelp([[maybe_unused]] std::string_view) {
+void PrintHelp([[maybe_unused]] std::any, [[maybe_unused]] App::Config*) {
   std::println("{}", help_string);
 }
 
@@ -38,7 +42,7 @@ void CliArgumentParser::Init() {
   using ValidationExecutionFunctionsPointer =
       ArgumentTrie::ValidationExecutionPair*;
 
-  function_pairs[0].Validate = EmptyFunc;
+  function_pairs[0].Parse = EmptyFunc;
   function_pairs[0].Execute = PrintHelp;
 
   trie.InsertArgument("help", RequiresValue{false},
@@ -51,13 +55,16 @@ std::string_view CliArgumentParser::GetHelp() const {
   return help_string;
 }
 
-void CliArgumentParser::Parse(const int argc, char* argv[]) {
+std::unique_ptr<App::Config> CliArgumentParser::Parse(const int argc,
+                                                      char* argv[]) {
+  std::unique_ptr<App::Config> config;
   for (int i{1}; i < argc; ++i) {
-    ParseArgument(argv[i]);
+    ParseArgument(argv[i], config.get());
   }
+  return config;
 };
 
-void CliArgumentParser::ParseArgument(char* argv) {
+void CliArgumentParser::ParseArgument(char* argv, App::Config* config) {
   using Node = ArgumentTrie::Node;
 
   if (argv[0] != '-' || argv[1] != '-') {
@@ -106,11 +113,26 @@ void CliArgumentParser::ParseArgument(char* argv) {
                       argument_name, GetHelp()));
     }
 
-    if (node->functions && node->functions->Validate &&
-        node->functions->Execute && node->functions->Validate(value)) {
-      node->functions->Execute(value);
+    if (!node->functions || !node->functions->Parse) {
       return;
     }
+
+    std::any parsed_value = node->functions->Parse(value);
+
+    if (!parsed_value.has_value()) {
+      throw std::runtime_error(
+          std::format("[Cli Argument Parser ERROR]: Failed to parse value {} "
+                      "supplied for the "
+                      "'{}' argument!\n{}",
+                      value, argument_name, GetHelp()));
+    }
+
+    if (!node->functions->Execute) {
+      return;
+    }
+
+    node->functions->Execute(std::move(parsed_value), config);
+    return;
   }
 
   if (argv[i] == 0) {
@@ -121,7 +143,7 @@ void CliArgumentParser::ParseArgument(char* argv) {
     }
 
     if (node->functions && node->functions->Execute) {
-      node->functions->Execute("");
+      node->functions->Execute({}, nullptr);
     }
   }
 }

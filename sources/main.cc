@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   try {
     rc::CliArgumentParser::Instance().Parse(argc, argv);
     rc::App& app{rc::App::Instance()};
-    app.Start();
+    app.Start(nullptr);
     while (app.ShouldRun()) {
       app.StartFrame();
       app.scene_renderer()->Render();

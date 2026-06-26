@@ -1,6 +1,7 @@
 #ifndef RADIANCE_CASCADES_TRIE_H_
 #define RADIANCE_CASCADES_TRIE_H_
 
+#include <any>
 #include <cctype>
 #include <format>
 #include <memory>
@@ -8,13 +9,15 @@
 #include <string_view>
 #include <unordered_map>
 
+#include "app.h"
+
 namespace rc {
 
 class ArgumentTrie {
  public:
   struct ValidationExecutionPair {
-    void (*Execute)(std::string_view);
-    bool (*Validate)(std::string_view);
+    void (*Execute)(std::any, App::Config*);
+    std::any (*Parse)(std::string_view);
   };
 
   struct Node {

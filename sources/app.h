@@ -32,6 +32,8 @@ class App {
     virtual ~Observer() = default;
   };
 
+  struct Config {};
+
   static App& Instance() {
     static App instance;
     return instance;
@@ -45,7 +47,7 @@ class App {
 
   virtual ~App();
 
-  void Start();
+  void Start(std::unique_ptr<Config> config);
 
   void StartFrame();
 
@@ -66,6 +68,8 @@ class App {
   MeasurementManager* measurement_manager() {
     return measurement_manager_.get();
   }
+
+  const Config* config() const { return config_.get(); }
 
   void AddObserver(Observer* observer);
 
@@ -92,10 +96,11 @@ class App {
  private:
   friend class Ui;
 
-  virtual void StartImpl();
+  virtual void StartImpl(std::unique_ptr<Config> config);
 
   App();
 
+  std::unique_ptr<Config> config_;
   std::unique_ptr<MeasurementManager> measurement_manager_;
   std::unique_ptr<Renderer> renderer_;
   std::unique_ptr<Ui> ui_;
